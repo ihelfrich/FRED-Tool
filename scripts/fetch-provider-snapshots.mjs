@@ -27,11 +27,10 @@ async function fetchJson(url, options = undefined) {
   return resp.json();
 }
 
-function fredV2Url(releaseId, key, cursor = "") {
+function fredV2Url(releaseId, cursor = "") {
   const p = new URLSearchParams({
     release_id: String(releaseId),
     format: "json",
-    api_key: key,
     limit: String(FRED_LIMIT)
   });
   if (cursor) p.set("cursor", cursor);
@@ -53,8 +52,10 @@ async function buildFredV2ReleaseSnapshot(releaseId) {
 
   while (true) {
     page += 1;
-    const url = fredV2Url(releaseId, fredKey, cursor);
-    const json = await fetchJson(url);
+    const url = fredV2Url(releaseId, cursor);
+    const json = await fetchJson(url, {
+      headers: { Authorization: `Bearer ${fredKey}` }
+    });
     const rows = Array.isArray(json?.data) ? json.data : [];
 
     rows.forEach((row) => {

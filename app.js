@@ -123,15 +123,22 @@
 
   async function fetchText(url, options = undefined) {
     const method = (options?.method || "GET").toUpperCase();
+    const hasCustomHeaders = Boolean(options?.headers && Object.keys(options.headers).length);
     try {
       const direct = await fetch(url, options);
       if (direct.ok) return direct.text();
       if (method !== "GET") {
         throw new Error(`Request failed (${direct.status})`);
       }
+      if (hasCustomHeaders) {
+        throw new Error(`Request failed (${direct.status}); this endpoint requires authenticated direct access.`);
+      }
     } catch (err) {
       // ignore direct failure, try proxy
       if (method !== "GET") {
+        throw err;
+      }
+      if (hasCustomHeaders) {
         throw err;
       }
     }
@@ -144,8 +151,8 @@
     return resp.text();
   }
 
-  async function fetchJson(url) {
-    const text = await fetchText(url);
+  async function fetchJson(url, options = undefined) {
+    const text = await fetchText(url, options);
     try {
       return JSON.parse(text);
     } catch (err) {
@@ -193,16 +200,19 @@
     return `${base}?${params.toString()}`;
   }
 
-  function fredV2ReleaseUrl(releaseId, apiKey, limit, cursor = "") {
+  function fredV2ReleaseUrl(releaseId, limit, cursor = "") {
     const base = "https://api.stlouisfed.org/fred/v2/release/observations";
     const params = new URLSearchParams({
       release_id: String(releaseId),
       format: "json",
-      api_key: apiKey,
       limit: String(limit)
     });
     if (cursor) params.set("cursor", cursor);
     return `${base}?${params.toString()}`;
+  }
+
+  function fredV2AuthHeaders(apiKey) {
+    return { Authorization: `Bearer ${apiKey}` };
   }
 
   async function fetchBlsSeries(seriesId, startDate, endDate, blsApiKey = "") {
@@ -516,8 +526,8 @@
     try {
       while (true) {
         page += 1;
-        const url = fredV2ReleaseUrl(releaseId, state.apiKey, limit, cursor);
-        const json = await fetchJson(url);
+        const url = fredV2ReleaseUrl(releaseId, limit, cursor);
+        const json = await fetchJson(url, { headers: fredV2AuthHeaders(state.apiKey) });
         const data = json?.data || [];
 
         data.forEach((item) => {
