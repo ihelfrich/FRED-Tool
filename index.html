@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FRED Tool - Live Data Studio</title>
+  <meta name="description" content="Live FRED data explorer with formula builder, yield curve tools, and export." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>FRED Tool</h1>
+      <p>Live FRED pulls, formulas, visualization, and exports</p>
+    </div>
+    <div class="topbar-actions">
+      <label for="apiKey">FRED API Key</label>
+      <input id="apiKey" type="password" placeholder="Needed for catalog search" autocomplete="off" />
+      <button id="saveApiKey" class="btn btn-secondary">Save Key</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-left">
+      <h2>Catalog + Series</h2>
+
+      <div class="card">
+        <h3>FRED Catalog Search</h3>
+        <p class="help">Uses FRED API. Add your key above to search the catalog.</p>
+        <div class="row">
+          <input id="catalogQuery" type="text" placeholder="Search FRED series (e.g., treasury spread)" />
+          <input id="catalogLimit" type="number" min="5" max="200" value="30" />
+          <button id="catalogSearch" class="btn btn-primary">Search</button>
+        </div>
+        <div id="catalogStatus" class="status"></div>
+        <div class="table-wrap compact" id="catalogWrap">
+          <table id="catalogTable">
+            <thead>
+              <tr>
+                <th>Add</th>
+                <th>Series ID</th>
+                <th>Title</th>
+                <th>Frequency</th>
+                <th>Units</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Manual Add</h3>
+        <div class="row">
+          <input id="manualSeriesId" type="text" placeholder="Series ID (e.g., GS10)" />
+          <input id="manualAlias" type="text" placeholder="Alias (optional, e.g., long_rate)" />
+          <button id="addManualSeries" class="btn btn-primary">Add</button>
+        </div>
+        <div class="row">
+          <button id="addYieldCurveSet" class="btn btn-secondary">Add Yield Curve Set (TB3MS + GS10)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Selected Series</h3>
+        <p class="help">Aliases become variable names for formulas. Use letters, numbers, and underscores.</p>
+        <div id="selectedSeries"></div>
+      </div>
+
+      <div class="card">
+        <h3>Date Range + Pull</h3>
+        <div class="row">
+          <label>Start</label>
+          <input id="startDate" type="date" value="1990-01-01" />
+          <label>End</label>
+          <input id="endDate" type="date" />
+        </div>
+        <div class="row">
+          <button id="fetchData" class="btn btn-primary">Pull Live Data</button>
+          <button id="clearData" class="btn btn-secondary">Clear</button>
+        </div>
+        <div id="fetchStatus" class="status"></div>
+      </div>
+    </section>
+
+    <section class="panel panel-center">
+      <h2>Formula Builder</h2>
+
+      <div class="card">
+        <h3>Algebraic Functions</h3>
+        <p class="help">One formula per line. Format: <code>NEW_VAR = expression</code>. Example: <code>YC_SPREAD = GS10 - TB3MS</code></p>
+        <textarea id="formulaInput" rows="9" placeholder="YC_SPREAD = GS10 - TB3MS
+YC_INVERTED = YC_SPREAD < 0"></textarea>
+        <div class="row">
+          <button id="applyFormulas" class="btn btn-primary">Apply Formulas</button>
+          <button id="addYieldCurveFormula" class="btn btn-secondary">Insert Yield Curve Formulas</button>
+        </div>
+        <div id="formulaStatus" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h3>Plot</h3>
+        <div class="row">
+          <label for="chartType">Type</label>
+          <select id="chartType">
+            <option value="line">Line</option>
+            <option value="scatter">Scatter</option>
+            <option value="bar">Bar</option>
+          </select>
+
+          <label for="plotSeries">Series</label>
+          <select id="plotSeries" multiple size="7"></select>
+
+          <label class="checkbox">
+            <input id="shadeInversions" type="checkbox" /> Shade inversion periods (if YC_SPREAD exists)
+          </label>
+
+          <button id="plotBtn" class="btn btn-primary">Plot</button>
+        </div>
+
+        <div class="row">
+          <button id="exportPng" class="btn btn-secondary">Export PNG</button>
+          <button id="exportSvg" class="btn btn-secondary">Export SVG</button>
+        </div>
+
+        <div id="plotStatus" class="status"></div>
+        <div id="chart"></div>
+      </div>
+    </section>
+
+    <section class="panel panel-right">
+      <h2>Data + Export</h2>
+
+      <div class="card">
+        <h3>Variables in Data</h3>
+        <div id="varList" class="pill-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>Download</h3>
+        <div class="row">
+          <button id="downloadCsv" class="btn btn-primary">Download CSV</button>
+          <button id="downloadXlsx" class="btn btn-primary">Download Excel</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Preview</h3>
+        <div id="previewStatus" class="status"></div>
+        <div class="table-wrap" id="previewWrap">
+          <table id="previewTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Data source: Federal Reserve Economic Data (FRED). Live pulls are proxied for browser compatibility in static hosting.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
