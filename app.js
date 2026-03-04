@@ -41,6 +41,10 @@
     exportSvg: document.getElementById("exportSvg"),
     plotStatus: document.getElementById("plotStatus"),
     chart: document.getElementById("chart"),
+    statSeries: document.getElementById("statSeries"),
+    statRows: document.getElementById("statRows"),
+    statVars: document.getElementById("statVars"),
+    statFormulas: document.getElementById("statFormulas"),
     varList: document.getElementById("varList"),
     downloadCsv: document.getElementById("downloadCsv"),
     downloadXlsx: document.getElementById("downloadXlsx"),
@@ -67,6 +71,17 @@
     node.textContent = message;
     node.classList.remove("ok", "error");
     if (type) node.classList.add(type);
+  }
+
+  function formatCount(n) {
+    return new Intl.NumberFormat("en-US").format(n);
+  }
+
+  function updateStats() {
+    if (el.statSeries) el.statSeries.textContent = formatCount(state.selectedSeries.length);
+    if (el.statRows) el.statRows.textContent = formatCount(state.dataRows.length);
+    if (el.statVars) el.statVars.textContent = formatCount(getVariableNames().length);
+    if (el.statFormulas) el.statFormulas.textContent = formatCount(state.formulas.length);
   }
 
   async function fetchText(url) {
@@ -188,6 +203,8 @@
         }
       });
     });
+
+    updateStats();
   }
 
   async function searchCatalog() {
@@ -285,6 +302,7 @@
     refreshVariableUI();
     renderPreview();
     updatePlotSeriesOptions();
+    updateStats();
   }
 
   function mergeSeriesRows(seriesMap) {
@@ -366,6 +384,7 @@
       refreshVariableUI();
       renderPreview();
       updatePlotSeriesOptions();
+      updateStats();
     } catch (err) {
       setStatus(el.formulaStatus, `Formula error: ${err.message}`, "error");
     }
@@ -442,12 +461,26 @@
     });
 
     const layout = {
-      title: "FRED Tool Visualization",
+      title: {
+        text: "FRED Visualization",
+        font: { family: "Fraunces, serif", size: 20, color: "#11334b" }
+      },
       paper_bgcolor: "#ffffff",
       plot_bgcolor: "#ffffff",
-      margin: { t: 50, r: 20, b: 50, l: 60 },
-      xaxis: { title: "Date" },
-      yaxis: { title: "Value" },
+      margin: { t: 58, r: 26, b: 54, l: 64 },
+      xaxis: {
+        title: "Date",
+        gridcolor: "#e7edf4",
+        linecolor: "#bcd0e0",
+        tickfont: { color: "#34556e" }
+      },
+      yaxis: {
+        title: "Value",
+        gridcolor: "#e7edf4",
+        linecolor: "#bcd0e0",
+        tickfont: { color: "#34556e" }
+      },
+      colorway: ["#0a7ea4", "#d07b00", "#206a4b", "#8d4f2b", "#4f6ea5", "#a33d3d"],
       legend: { orientation: "h", y: -0.2 },
       shapes: []
     };
@@ -583,6 +616,94 @@
     setStatus(el.formulaStatus, "");
     setStatus(el.plotStatus, "");
     setStatus(el.previewStatus, "No data rows yet.");
+    updateStats();
+  }
+
+  function initThreeScene() {
+    const canvas = document.getElementById("sceneBg");
+    if (!canvas || typeof window.THREE === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const THREE = window.THREE;
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 8.4);
+
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    const dotsGeometry = new THREE.SphereGeometry(2.15, 52, 52);
+    const dotsMaterial = new THREE.PointsMaterial({
+      color: 0x0a7ea4,
+      size: 0.028,
+      transparent: true,
+      opacity: 0.72
+    });
+    const dots = new THREE.Points(dotsGeometry, dotsMaterial);
+    globeGroup.add(dots);
+
+    const wire = new THREE.Mesh(
+      new THREE.SphereGeometry(2.18, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0xd07b00,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.11
+      })
+    );
+    globeGroup.add(wire);
+
+    const starCount = 900;
+    const starGeo = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i += 1) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 34;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 22;
+      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({
+        color: 0x9fc8df,
+        size: 0.02,
+        transparent: true,
+        opacity: 0.6
+      })
+    );
+    scene.add(stars);
+
+    let rafId = null;
+    const animate = () => {
+      globeGroup.rotation.y += 0.0018;
+      globeGroup.rotation.x += 0.00035;
+      stars.rotation.y -= 0.00016;
+      renderer.render(scene, camera);
+      rafId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    const onResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    };
+    window.addEventListener("resize", onResize);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+      } else if (!rafId) {
+        animate();
+      }
+    });
   }
 
   function wireEvents() {
@@ -637,6 +758,8 @@
   }
 
   wireEvents();
+  initThreeScene();
   renderSelectedSeries();
   renderPreview();
+  updateStats();
 })();

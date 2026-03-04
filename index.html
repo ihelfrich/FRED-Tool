@@ -5,38 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FRED Tool - Live Data Studio</title>
   <meta name="description" content="Live FRED data explorer with formula builder, yield curve tools, and export." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+
   <script src="https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+  <canvas id="sceneBg" aria-hidden="true"></canvas>
+
   <header class="topbar">
     <div class="brand">
+      <p class="kicker">Academic Data Studio</p>
       <h1>FRED Tool</h1>
-      <p>Live FRED pulls, formulas, visualization, and exports</p>
+      <p class="subtitle">Live FRED pulls, formulas, inversion logic, and publication-ready exports.</p>
     </div>
-    <div class="topbar-actions">
+
+    <div class="topbar-actions" role="group" aria-label="API key controls">
       <label for="apiKey">FRED API Key</label>
-      <input id="apiKey" type="password" placeholder="Needed for catalog search" autocomplete="off" />
+      <input id="apiKey" type="password" placeholder="Required for catalog search" autocomplete="off" />
       <button id="saveApiKey" class="btn btn-secondary">Save Key</button>
+      <span class="build-pill" title="Deployed from GitHub Actions">Build: GitHub Actions</span>
     </div>
   </header>
 
-  <main class="layout">
-    <section class="panel panel-left">
-      <h2>Catalog + Series</h2>
+  <section class="stat-strip" aria-label="Current workspace summary">
+    <div class="stat-card">
+      <span class="stat-label">Series</span>
+      <span id="statSeries" class="stat-value">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Rows</span>
+      <span id="statRows" class="stat-value">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Variables</span>
+      <span id="statVars" class="stat-value">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Derived Formulas</span>
+      <span id="statFormulas" class="stat-value">0</span>
+    </div>
+  </section>
 
-      <div class="card">
+  <main id="mainContent" class="layout">
+    <section class="panel panel-left" aria-labelledby="catalogPanelTitle">
+      <h2 id="catalogPanelTitle">Catalog + Series</h2>
+
+      <article class="card">
         <h3>FRED Catalog Search</h3>
-        <p class="help">Uses FRED API. Add your key above to search the catalog.</p>
+        <p class="help">Search the FRED catalog by keyword and add series with one click.</p>
         <div class="row">
-          <input id="catalogQuery" type="text" placeholder="Search FRED series (e.g., treasury spread)" />
-          <input id="catalogLimit" type="number" min="5" max="200" value="30" />
+          <input id="catalogQuery" type="text" placeholder="Search FRED series (e.g., treasury spread)" aria-label="Catalog search query" />
+          <input id="catalogLimit" type="number" min="5" max="200" value="30" aria-label="Catalog result limit" />
           <button id="catalogSearch" class="btn btn-primary">Search</button>
         </div>
-        <div id="catalogStatus" class="status"></div>
+        <div id="catalogStatus" class="status" role="status" aria-live="polite"></div>
         <div class="table-wrap compact" id="catalogWrap">
           <table id="catalogTable">
             <thead>
@@ -51,46 +81,46 @@
             <tbody></tbody>
           </table>
         </div>
-      </div>
+      </article>
 
-      <div class="card">
+      <article class="card">
         <h3>Manual Add</h3>
         <div class="row">
-          <input id="manualSeriesId" type="text" placeholder="Series ID (e.g., GS10)" />
-          <input id="manualAlias" type="text" placeholder="Alias (optional, e.g., long_rate)" />
+          <input id="manualSeriesId" type="text" placeholder="Series ID (e.g., GS10)" aria-label="Manual series ID" />
+          <input id="manualAlias" type="text" placeholder="Alias (optional, e.g., long_rate)" aria-label="Manual alias" />
           <button id="addManualSeries" class="btn btn-primary">Add</button>
         </div>
         <div class="row">
           <button id="addYieldCurveSet" class="btn btn-secondary">Add Yield Curve Set (TB3MS + GS10)</button>
         </div>
-      </div>
+      </article>
 
-      <div class="card">
+      <article class="card">
         <h3>Selected Series</h3>
-        <p class="help">Aliases become variable names for formulas. Use letters, numbers, and underscores.</p>
+        <p class="help">Aliases become formula variables. Use letters, numbers, and underscores.</p>
         <div id="selectedSeries"></div>
-      </div>
+      </article>
 
-      <div class="card">
+      <article class="card">
         <h3>Date Range + Pull</h3>
         <div class="row">
-          <label>Start</label>
+          <label for="startDate">Start</label>
           <input id="startDate" type="date" value="1990-01-01" />
-          <label>End</label>
+          <label for="endDate">End</label>
           <input id="endDate" type="date" />
         </div>
         <div class="row">
           <button id="fetchData" class="btn btn-primary">Pull Live Data</button>
           <button id="clearData" class="btn btn-secondary">Clear</button>
         </div>
-        <div id="fetchStatus" class="status"></div>
-      </div>
+        <div id="fetchStatus" class="status" role="status" aria-live="polite"></div>
+      </article>
     </section>
 
-    <section class="panel panel-center">
-      <h2>Formula Builder</h2>
+    <section class="panel panel-center" aria-labelledby="formulaPanelTitle">
+      <h2 id="formulaPanelTitle">Formula + Visualization</h2>
 
-      <div class="card">
+      <article class="card">
         <h3>Algebraic Functions</h3>
         <p class="help">One formula per line. Format: <code>NEW_VAR = expression</code>. Example: <code>YC_SPREAD = GS10 - TB3MS</code></p>
         <textarea id="formulaInput" rows="9" placeholder="YC_SPREAD = GS10 - TB3MS
@@ -99,70 +129,75 @@ YC_INVERTED = YC_SPREAD < 0"></textarea>
           <button id="applyFormulas" class="btn btn-primary">Apply Formulas</button>
           <button id="addYieldCurveFormula" class="btn btn-secondary">Insert Yield Curve Formulas</button>
         </div>
-        <div id="formulaStatus" class="status"></div>
-      </div>
+        <div id="formulaStatus" class="status" role="status" aria-live="polite"></div>
+      </article>
 
-      <div class="card">
-        <h3>Plot</h3>
-        <div class="row">
-          <label for="chartType">Type</label>
-          <select id="chartType">
-            <option value="line">Line</option>
-            <option value="scatter">Scatter</option>
-            <option value="bar">Bar</option>
-          </select>
+      <article class="card chart-card">
+        <h3>Visualization Studio</h3>
+        <div class="row row-grid-controls">
+          <div class="control-box">
+            <label for="chartType">Chart Type</label>
+            <select id="chartType">
+              <option value="line">Line</option>
+              <option value="scatter">Scatter</option>
+              <option value="bar">Bar</option>
+            </select>
+          </div>
 
-          <label for="plotSeries">Series</label>
-          <select id="plotSeries" multiple size="7"></select>
+          <div class="control-box wide">
+            <label for="plotSeries">Variables to Plot</label>
+            <select id="plotSeries" multiple size="7" aria-label="Variables to plot"></select>
+          </div>
 
-          <label class="checkbox">
-            <input id="shadeInversions" type="checkbox" /> Shade inversion periods (if YC_SPREAD exists)
-          </label>
-
-          <button id="plotBtn" class="btn btn-primary">Plot</button>
+          <div class="control-box">
+            <label class="checkbox" for="shadeInversions">
+              <input id="shadeInversions" type="checkbox" /> Shade inversion windows when <code>YC_SPREAD</code> exists
+            </label>
+          </div>
         </div>
 
         <div class="row">
+          <button id="plotBtn" class="btn btn-primary">Render Plot</button>
           <button id="exportPng" class="btn btn-secondary">Export PNG</button>
           <button id="exportSvg" class="btn btn-secondary">Export SVG</button>
         </div>
 
-        <div id="plotStatus" class="status"></div>
-        <div id="chart"></div>
-      </div>
+        <div id="plotStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="chart" aria-label="Data chart"></div>
+      </article>
     </section>
 
-    <section class="panel panel-right">
-      <h2>Data + Export</h2>
+    <section class="panel panel-right" aria-labelledby="exportPanelTitle">
+      <h2 id="exportPanelTitle">Data + Export</h2>
 
-      <div class="card">
-        <h3>Variables in Data</h3>
+      <article class="card">
+        <h3>Variables in Dataset</h3>
         <div id="varList" class="pill-list"></div>
-      </div>
+      </article>
 
-      <div class="card">
-        <h3>Download</h3>
+      <article class="card">
+        <h3>Download Data</h3>
         <div class="row">
           <button id="downloadCsv" class="btn btn-primary">Download CSV</button>
           <button id="downloadXlsx" class="btn btn-primary">Download Excel</button>
         </div>
-      </div>
+      </article>
 
-      <div class="card">
-        <h3>Preview</h3>
-        <div id="previewStatus" class="status"></div>
+      <article class="card">
+        <h3>Data Preview</h3>
+        <div id="previewStatus" class="status" role="status" aria-live="polite"></div>
         <div class="table-wrap" id="previewWrap">
           <table id="previewTable">
             <thead></thead>
             <tbody></tbody>
           </table>
         </div>
-      </div>
+      </article>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Data source: Federal Reserve Economic Data (FRED). Live pulls are proxied for browser compatibility in static hosting.</p>
+    <p>Data source: Federal Reserve Economic Data (FRED). Static-host compatible live pulls are proxied for browser CORS constraints.</p>
   </footer>
 
   <script src="app.js"></script>
