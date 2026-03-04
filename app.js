@@ -3,6 +3,7 @@
     apiKey: localStorage.getItem("fred_api_key") || "",
     selectedSeries: [], // [{id, alias, title}]
     rawSeries: new Map(), // alias -> [{date, value}]
+    baseRows: [],
     dataRows: [],
     formulas: [], // [{name, expression}]
     chartReady: false,
@@ -33,6 +34,10 @@
     applyFormulas: document.getElementById("applyFormulas"),
     addYieldCurveFormula: document.getElementById("addYieldCurveFormula"),
     formulaStatus: document.getElementById("formulaStatus"),
+    sqlInput: document.getElementById("sqlInput"),
+    runSql: document.getElementById("runSql"),
+    resetSql: document.getElementById("resetSql"),
+    sqlStatus: document.getElementById("sqlStatus"),
     chartType: document.getElementById("chartType"),
     plotSeries: document.getElementById("plotSeries"),
     shadeInversions: document.getElementById("shadeInversions"),
@@ -73,6 +78,10 @@
     if (type) node.classList.add(type);
   }
 
+  function cloneRows(rows) {
+    return rows.map((r) => ({ ...r }));
+  }
+
   function formatCount(n) {
     return new Intl.NumberFormat("en-US").format(n);
   }
@@ -82,6 +91,13 @@
     if (el.statRows) el.statRows.textContent = formatCount(state.dataRows.length);
     if (el.statVars) el.statVars.textContent = formatCount(getVariableNames().length);
     if (el.statFormulas) el.statFormulas.textContent = formatCount(state.formulas.length);
+  }
+
+  function refreshAllViews() {
+    refreshVariableUI();
+    renderPreview();
+    updatePlotSeriesOptions();
+    updateStats();
   }
 
   async function fetchText(url) {
@@ -296,13 +312,11 @@
 
     state.rawSeries = fetched;
     state.dataRows = mergeSeriesRows(state.rawSeries);
+    state.baseRows = cloneRows(state.dataRows);
 
     setStatus(el.fetchStatus, `Pulled ${state.selectedSeries.length} series with ${state.dataRows.length} date rows.`, "ok");
-
-    refreshVariableUI();
-    renderPreview();
-    updatePlotSeriesOptions();
-    updateStats();
+    setStatus(el.sqlStatus, "SQL backend synced with fresh data.", "ok");
+    refreshAllViews();
   }
 
   function mergeSeriesRows(seriesMap) {
@@ -320,7 +334,13 @@
 
   function getVariableNames() {
     if (!state.dataRows.length) return [];
-    return Object.keys(state.dataRows[0]).filter((k) => k !== "DATE");
+    const vars = new Set();
+    state.dataRows.forEach((row) => {
+      Object.keys(row).forEach((k) => {
+        if (k !== "DATE") vars.add(k);
+      });
+    });
+    return [...vars];
   }
 
   function parseFormulaLines(text) {
@@ -340,6 +360,66 @@
         }
         return { name, expression };
       });
+  }
+
+  function syncSqlBackend(rows) {
+    if (typeof alasql === "undefined") {
+      throw new Error("SQL engine not loaded.");
+    }
+
+    alasql("DROP TABLE IF EXISTS fred_data");
+    alasql("CREATE TABLE fred_data");
+    alasql.tables.fred_data.data = cloneRows(rows);
+  }
+
+  function normalizeSqlResult(result) {
+    if (!Array.isArray(result)) {
+      throw new Error("SQL query must return a table result.");
+    }
+
+    return result.map((row, i) => {
+      if (row && typeof row === "object" && !Array.isArray(row)) {
+        if (!Object.prototype.hasOwnProperty.call(row, "DATE")) {
+          return { DATE: state.dataRows[i]?.DATE ?? String(i + 1), ...row };
+        }
+        return row;
+      }
+      return { DATE: state.dataRows[i]?.DATE ?? String(i + 1), value: row };
+    });
+  }
+
+  function runSqlQuery() {
+    if (!state.dataRows.length) {
+      setStatus(el.sqlStatus, "Pull data first, then run SQL.", "error");
+      return;
+    }
+
+    const sql = (el.sqlInput.value || "").trim();
+    if (!sql) {
+      setStatus(el.sqlStatus, "Add a SQL query.", "error");
+      return;
+    }
+
+    try {
+      syncSqlBackend(state.dataRows);
+      const result = alasql(sql);
+      const normalized = normalizeSqlResult(result);
+      state.dataRows = normalized;
+      setStatus(el.sqlStatus, `SQL applied: ${state.dataRows.length} rows in current view.`, "ok");
+      refreshAllViews();
+    } catch (err) {
+      setStatus(el.sqlStatus, `SQL error: ${err.message}`, "error");
+    }
+  }
+
+  function resetSqlView() {
+    if (!state.baseRows.length) {
+      setStatus(el.sqlStatus, "No base dataset available to reset.", "error");
+      return;
+    }
+    state.dataRows = cloneRows(state.baseRows);
+    setStatus(el.sqlStatus, "Reset to base dataset (pre-SQL).", "ok");
+    refreshAllViews();
   }
 
   function applyFormulas() {
@@ -363,7 +443,9 @@
     }
 
     try {
-      state.dataRows = state.dataRows.map((row) => {
+      const target = state.baseRows.length ? cloneRows(state.baseRows) : cloneRows(state.dataRows);
+
+      state.baseRows = target.map((row) => {
         const out = { ...row };
         for (const f of parsed) {
           const scope = { ...out };
@@ -379,12 +461,12 @@
         return out;
       });
 
+      state.dataRows = cloneRows(state.baseRows);
+
       state.formulas = parsed;
       setStatus(el.formulaStatus, `Applied ${parsed.length} formula(s).`, "ok");
-      refreshVariableUI();
-      renderPreview();
-      updatePlotSeriesOptions();
-      updateStats();
+      setStatus(el.sqlStatus, "SQL view reset to formula-updated base dataset.", "ok");
+      refreshAllViews();
     } catch (err) {
       setStatus(el.formulaStatus, `Formula error: ${err.message}`, "error");
     }
@@ -448,19 +530,7 @@
 
     const x = state.dataRows.map((r) => r.DATE);
     const type = el.chartType.value;
-    const mode = type === "line" ? "lines" : type === "scatter" ? "markers" : "lines";
-
-    const traces = selectedVars.map((v) => {
-      return {
-        type: type === "line" ? "scatter" : type,
-        mode,
-        name: v,
-        x,
-        y: state.dataRows.map((r) => (r[v] === undefined ? null : r[v]))
-      };
-    });
-
-    const layout = {
+    const baseLayout = {
       title: {
         text: "FRED Visualization",
         font: { family: "Fraunces, serif", size: 20, color: "#11334b" }
@@ -472,7 +542,8 @@
         title: "Date",
         gridcolor: "#e7edf4",
         linecolor: "#bcd0e0",
-        tickfont: { color: "#34556e" }
+        tickfont: { color: "#34556e" },
+        rangeslider: { visible: true, thickness: 0.06 }
       },
       yaxis: {
         title: "Value",
@@ -482,10 +553,197 @@
       },
       colorway: ["#0a7ea4", "#d07b00", "#206a4b", "#8d4f2b", "#4f6ea5", "#a33d3d"],
       legend: { orientation: "h", y: -0.2 },
-      shapes: []
+      shapes: [],
+      uirevision: "static"
     };
 
-    if (el.shadeInversions.checked && selectedVars.includes("YC_SPREAD")) {
+    if (type === "corr_heatmap") {
+      if (selectedVars.length < 2) {
+        setStatus(el.plotStatus, "Select at least 2 variables for correlation heatmap.", "error");
+        return;
+      }
+
+      const z = selectedVars.map((v1) => {
+        return selectedVars.map((v2) => {
+          const a = [];
+          const b = [];
+          state.dataRows.forEach((row) => {
+            const x1 = Number(row[v1]);
+            const x2 = Number(row[v2]);
+            if (Number.isFinite(x1) && Number.isFinite(x2)) {
+              a.push(x1);
+              b.push(x2);
+            }
+          });
+          if (a.length < 2) return null;
+          const ma = a.reduce((p, c) => p + c, 0) / a.length;
+          const mb = b.reduce((p, c) => p + c, 0) / b.length;
+          let num = 0;
+          let da = 0;
+          let db = 0;
+          for (let i = 0; i < a.length; i += 1) {
+            const xa = a[i] - ma;
+            const xb = b[i] - mb;
+            num += xa * xb;
+            da += xa * xa;
+            db += xb * xb;
+          }
+          if (!da || !db) return null;
+          return num / Math.sqrt(da * db);
+        });
+      });
+
+      const heatTrace = {
+        type: "heatmap",
+        x: selectedVars,
+        y: selectedVars,
+        z,
+        zmin: -1,
+        zmax: 1,
+        colorscale: "RdBu",
+        reversescale: true
+      };
+      Plotly.newPlot(el.chart, [heatTrace], {
+        ...baseLayout,
+        title: { ...baseLayout.title, text: "Correlation Heatmap" },
+        xaxis: { title: "Variables" },
+        yaxis: { title: "Variables" }
+      }, { responsive: true, displaylogo: false });
+      state.chartReady = true;
+      setStatus(el.plotStatus, `Rendered correlation matrix for ${selectedVars.length} variables.`, "ok");
+      return;
+    }
+
+    if (type === "yield_dashboard") {
+      const hasGS10 = selectedVars.includes("GS10") || getVariableNames().includes("GS10");
+      const hasTB3MS = selectedVars.includes("TB3MS") || getVariableNames().includes("TB3MS");
+      const canUseSpreadVar = getVariableNames().includes("YC_SPREAD");
+      if (!canUseSpreadVar && !(hasGS10 && hasTB3MS)) {
+        setStatus(el.plotStatus, "Yield dashboard needs YC_SPREAD or both GS10 and TB3MS.", "error");
+        return;
+      }
+
+      const gs10 = state.dataRows.map((r) => Number.isFinite(Number(r.GS10)) ? Number(r.GS10) : null);
+      const tb3 = state.dataRows.map((r) => Number.isFinite(Number(r.TB3MS)) ? Number(r.TB3MS) : null);
+      const spread = state.dataRows.map((r, i) => {
+        if (Number.isFinite(Number(r.YC_SPREAD))) return Number(r.YC_SPREAD);
+        if (Number.isFinite(gs10[i]) && Number.isFinite(tb3[i])) return gs10[i] - tb3[i];
+        return null;
+      });
+
+      const traces = [];
+      if (hasGS10) {
+        traces.push({
+          type: "scattergl",
+          mode: "lines",
+          name: "GS10",
+          x,
+          y: gs10,
+          xaxis: "x",
+          yaxis: "y",
+          line: { width: 2.2 }
+        });
+      }
+      if (hasTB3MS) {
+        traces.push({
+          type: "scattergl",
+          mode: "lines",
+          name: "TB3MS",
+          x,
+          y: tb3,
+          xaxis: "x",
+          yaxis: "y",
+          line: { width: 2.2 }
+        });
+      }
+      traces.push({
+        type: "scattergl",
+        mode: "lines",
+        name: "Yield Spread",
+        x,
+        y: spread,
+        xaxis: "x2",
+        yaxis: "y2",
+        fill: "tozeroy",
+        line: { width: 2.5, color: "#d07b00" }
+      });
+
+      const shapes = [
+        {
+          type: "line",
+          xref: "x2",
+          yref: "y2",
+          x0: x[0],
+          x1: x[x.length - 1],
+          y0: 0,
+          y1: 0,
+          line: { color: "#8fa2b3", width: 1, dash: "dot" }
+        }
+      ];
+
+      if (el.shadeInversions.checked) {
+        const invShapes = computeInversionShapes(x, spread).map((s) => ({ ...s, xref: "x2", yref: "paper", y0: 0, y1: 0.4 }));
+        shapes.push(...invShapes);
+      }
+
+      Plotly.newPlot(el.chart, traces, {
+        ...baseLayout,
+        title: { ...baseLayout.title, text: "Yield Dashboard (Rates + Spread)" },
+        grid: { rows: 2, columns: 1, pattern: "independent", roworder: "top to bottom" },
+        xaxis: { ...baseLayout.xaxis, domain: [0, 1], anchor: "y", rangeslider: { visible: false } },
+        yaxis: { ...baseLayout.yaxis, domain: [0.46, 1], title: "Rate (%)" },
+        xaxis2: { ...baseLayout.xaxis, domain: [0, 1], anchor: "y2", title: "Date", rangeslider: { visible: true, thickness: 0.06 } },
+        yaxis2: { ...baseLayout.yaxis, domain: [0, 0.38], title: "GS10 - TB3MS" },
+        shapes
+      }, { responsive: true, displaylogo: false });
+      state.chartReady = true;
+      setStatus(el.plotStatus, "Rendered yield dashboard.", "ok");
+      return;
+    }
+
+    if (type === "webgl_3d") {
+      const traces = selectedVars.map((v, idx) => ({
+        type: "scatter3d",
+        mode: "lines",
+        name: v,
+        x,
+        y: state.dataRows.map((r) => (r[v] === undefined ? null : r[v])),
+        z: state.dataRows.map(() => idx + 1),
+        line: { width: 4 }
+      }));
+      Plotly.newPlot(el.chart, traces, {
+        ...baseLayout,
+        title: { ...baseLayout.title, text: "3D WebGL Time-Series Stack" },
+        scene: {
+          xaxis: { title: "Date" },
+          yaxis: { title: "Value" },
+          zaxis: {
+            title: "Series Layer",
+            tickvals: selectedVars.map((_, i) => i + 1),
+            ticktext: selectedVars
+          },
+          camera: { eye: { x: 1.5, y: 1.15, z: 0.9 } }
+        }
+      }, { responsive: true, displaylogo: false });
+      state.chartReady = true;
+      setStatus(el.plotStatus, `Rendered WebGL 3D plot for ${selectedVars.length} series.`, "ok");
+      return;
+    }
+
+    const mode = type === "line" ? "lines" : type === "scatter" ? "markers" : "lines";
+
+    const traces = selectedVars.map((v) => ({
+      type: type === "bar" ? "bar" : "scattergl",
+      mode,
+      name: v,
+      x,
+      y: state.dataRows.map((r) => (r[v] === undefined ? null : r[v])),
+      line: { width: 2 }
+    }));
+
+    const layout = { ...baseLayout };
+
+    if (el.shadeInversions.checked && getVariableNames().includes("YC_SPREAD")) {
       const ySpread = state.dataRows.map((r) => r.YC_SPREAD ?? null);
       layout.shapes = computeInversionShapes(x, ySpread);
     }
@@ -603,10 +861,12 @@
 
   function clearAll() {
     state.rawSeries = new Map();
+    state.baseRows = [];
     state.dataRows = [];
     state.formulas = [];
     state.chartReady = false;
     el.formulaInput.value = "";
+    if (el.sqlInput) el.sqlInput.value = "SELECT * FROM fred_data ORDER BY DATE";
     el.plotSeries.innerHTML = "";
     el.varList.innerHTML = "";
     el.previewTableHead.innerHTML = "";
@@ -614,6 +874,7 @@
     Plotly.purge(el.chart);
     setStatus(el.fetchStatus, "Cleared loaded data.", "ok");
     setStatus(el.formulaStatus, "");
+    setStatus(el.sqlStatus, "");
     setStatus(el.plotStatus, "");
     setStatus(el.previewStatus, "No data rows yet.");
     updateStats();
@@ -709,6 +970,7 @@
   function wireEvents() {
     el.endDate.value = todayISO();
     el.apiKey.value = state.apiKey;
+    if (el.sqlInput) el.sqlInput.value = "SELECT * FROM fred_data ORDER BY DATE";
 
     el.saveApiKey.addEventListener("click", () => {
       state.apiKey = el.apiKey.value.trim();
@@ -741,6 +1003,8 @@
     el.clearData.addEventListener("click", clearAll);
 
     el.applyFormulas.addEventListener("click", applyFormulas);
+    el.runSql.addEventListener("click", runSqlQuery);
+    el.resetSql.addEventListener("click", resetSqlView);
 
     el.addYieldCurveFormula.addEventListener("click", () => {
       const snippet = "YC_SPREAD = GS10 - TB3MS\nYC_INVERTED = YC_SPREAD < 0";

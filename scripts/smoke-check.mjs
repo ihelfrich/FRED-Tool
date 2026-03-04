@@ -36,8 +36,10 @@ async function run() {
   const htmlChecks = [
     'id="chart"',
     'id="formulaInput"',
+    'id="sqlInput"',
     'id="sceneBg"',
-    "three.min.js"
+    "three.min.js",
+    "alasql"
   ];
 
   for (const token of htmlChecks) {
@@ -46,7 +48,12 @@ async function run() {
     }
   }
 
-  const jsChecks = ["function initThreeScene()", "function applyFormulas()", "function plotData()"];
+  const jsChecks = [
+    "function initThreeScene()",
+    "function applyFormulas()",
+    "function runSqlQuery()",
+    "function plotData()"
+  ];
   for (const token of jsChecks) {
     if (!js.includes(token)) {
       throw new Error(`dist/app.js missing token: ${token}`);

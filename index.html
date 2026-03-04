@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alasql@4.5.1/dist/alasql.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js"></script>
 </head>
 <body>
@@ -132,6 +133,17 @@ YC_INVERTED = YC_SPREAD < 0"></textarea>
         <div id="formulaStatus" class="status" role="status" aria-live="polite"></div>
       </article>
 
+      <article class="card">
+        <h3>Data Backend (SQL)</h3>
+        <p class="help">Run SQL against the in-browser dataset table <code>fred_data</code>. This lets users filter/reshape before plotting.</p>
+        <textarea id="sqlInput" rows="5" placeholder="SELECT DATE, GS10, TB3MS, YC_SPREAD FROM fred_data WHERE DATE >= '2000-01-01' ORDER BY DATE"></textarea>
+        <div class="row">
+          <button id="runSql" class="btn btn-primary">Run SQL</button>
+          <button id="resetSql" class="btn btn-secondary">Reset SQL</button>
+        </div>
+        <div id="sqlStatus" class="status" role="status" aria-live="polite"></div>
+      </article>
+
       <article class="card chart-card">
         <h3>Visualization Studio</h3>
         <div class="row row-grid-controls">
@@ -141,6 +153,9 @@ YC_INVERTED = YC_SPREAD < 0"></textarea>
               <option value="line">Line</option>
               <option value="scatter">Scatter</option>
               <option value="bar">Bar</option>
+              <option value="yield_dashboard">Yield Dashboard</option>
+              <option value="corr_heatmap">Correlation Heatmap</option>
+              <option value="webgl_3d">3D WebGL View</option>
             </select>
           </div>
 
