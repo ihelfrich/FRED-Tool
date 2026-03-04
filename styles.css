@@ -360,6 +360,11 @@ tbody tr:nth-child(odd) {
   color: var(--muted);
 }
 
+.series-meta {
+  font-size: 0.73rem;
+  color: #5e778b;
+}
+
 .series-provider {
   display: inline-block;
   margin-left: 0.3rem;
@@ -407,6 +412,12 @@ tbody tr:nth-child(odd) {
   align-items: center;
   font-size: 0.83rem;
   color: #37566f;
+}
+
+#presetSummary,
+#libraryDetails {
+  line-height: 1.4;
+  font-size: 0.8rem;
 }
 
 .checkbox code {

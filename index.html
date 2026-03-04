@@ -103,6 +103,23 @@
       </article>
 
       <article class="card">
+        <h3>Fed Report Presets</h3>
+        <p class="help">Load curated scenario templates that mirror common Fed-style macro monitoring workflows.</p>
+        <div class="row">
+          <select id="presetSelect" aria-label="Report preset"></select>
+        </div>
+        <div class="row">
+          <button id="loadPreset" class="btn btn-primary">Load Preset</button>
+          <button id="runPreset" class="btn btn-secondary">Load + Pull + Plot</button>
+          <label class="checkbox" for="replacePreset">
+            <input id="replacePreset" type="checkbox" checked /> Replace current series
+          </label>
+        </div>
+        <div id="presetSummary" class="help"></div>
+        <div id="presetStatus" class="status" role="status" aria-live="polite"></div>
+      </article>
+
+      <article class="card">
         <h3>External CSV Source</h3>
         <p class="help">Import other public data sources with a date column and value column.</p>
         <div class="row">
@@ -139,6 +156,38 @@
             <tbody></tbody>
           </table>
         </div>
+      </article>
+
+      <article class="card">
+        <h3>Top-100 Series Intelligence</h3>
+        <p class="help">Explore policy-relevant series with date spans and commonly connected datasets.</p>
+        <div class="row">
+          <input id="librarySearch" type="text" placeholder="Filter by ID, title, theme, or term" aria-label="Library search" />
+          <select id="librarySort" aria-label="Library sort">
+            <option value="score_desc">Sort: Relevance score</option>
+            <option value="span_desc">Sort: Longest history</option>
+            <option value="start_asc">Sort: Earliest start date</option>
+            <option value="id_asc">Sort: Series ID</option>
+          </select>
+        </div>
+        <div id="libraryStatus" class="status" role="status" aria-live="polite"></div>
+        <div class="table-wrap compact">
+          <table id="libraryTable">
+            <thead>
+              <tr>
+                <th>Add</th>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Span (yrs)</th>
+                <th>Connected</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="libraryDetails" class="help"></div>
       </article>
 
       <article class="card">

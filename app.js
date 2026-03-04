@@ -12,7 +12,10 @@
     fredV2Catalog: [],
     fredV2SeriesRows: new Map(), // series_id -> [{date, value}]
     snapshotManifest: null,
-    blsSnapshotRows: new Map() // series_id -> rows
+    blsSnapshotRows: new Map(), // series_id -> rows
+    reportPresets: [],
+    seriesLibrary: [],
+    seriesLookup: new Map()
   };
 
   const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
@@ -31,6 +34,12 @@
     manualAlias: document.getElementById("manualAlias"),
     addManualSeries: document.getElementById("addManualSeries"),
     addYieldCurveSet: document.getElementById("addYieldCurveSet"),
+    presetSelect: document.getElementById("presetSelect"),
+    loadPreset: document.getElementById("loadPreset"),
+    runPreset: document.getElementById("runPreset"),
+    replacePreset: document.getElementById("replacePreset"),
+    presetSummary: document.getElementById("presetSummary"),
+    presetStatus: document.getElementById("presetStatus"),
     externalCsvUrl: document.getElementById("externalCsvUrl"),
     externalCsvDateColumn: document.getElementById("externalCsvDateColumn"),
     externalCsvValueColumn: document.getElementById("externalCsvValueColumn"),
@@ -41,6 +50,11 @@
     loadFredV2Bulk: document.getElementById("loadFredV2Bulk"),
     fredV2Status: document.getElementById("fredV2Status"),
     fredV2TableBody: document.querySelector("#fredV2Table tbody"),
+    librarySearch: document.getElementById("librarySearch"),
+    librarySort: document.getElementById("librarySort"),
+    libraryStatus: document.getElementById("libraryStatus"),
+    libraryTableBody: document.querySelector("#libraryTable tbody"),
+    libraryDetails: document.getElementById("libraryDetails"),
     selectedSeries: document.getElementById("selectedSeries"),
     startDate: document.getElementById("startDate"),
     endDate: document.getElementById("endDate"),
@@ -317,12 +331,23 @@
     }
 
     state.selectedSeries.forEach((s) => {
+      const libMeta = s.provider === "fred" ? state.seriesLookup.get(s.id) : null;
+      const spanBits = [];
+      if (libMeta?.observation_start && libMeta?.observation_end) {
+        const spanYears = libMeta.span_years != null ? `${libMeta.span_years}y` : "";
+        spanBits.push(`${libMeta.observation_start} to ${libMeta.observation_end}${spanYears ? ` (${spanYears})` : ""}`);
+      }
+      if (libMeta?.connected_series?.length) {
+        spanBits.push(`${libMeta.connected_series.length} linked series`);
+      }
+
       const row = document.createElement("div");
       row.className = "series-item";
       row.innerHTML = `
         <div>
           <div><strong>${s.id}</strong> <span class="series-provider">${s.provider.toUpperCase()}</span></div>
           <div class="series-label">${s.title || "Manual series"}</div>
+          ${spanBits.length ? `<div class="series-meta">${spanBits.join(" | ")}</div>` : ""}
         </div>
         <input data-series-alias="${s.key}" type="text" value="${s.alias}" />
         <button data-remove-series="${s.key}" class="btn btn-secondary">Remove</button>
@@ -400,6 +425,242 @@
         upsertSeries(id, id, s?.title || "", "fred");
       });
     });
+  }
+
+  function setSelectedPlotVars(varNames = []) {
+    const want = new Set((varNames || []).map((x) => String(x)));
+    [...el.plotSeries.options].forEach((o) => {
+      o.selected = want.has(o.value);
+    });
+  }
+
+  function activePreset() {
+    const pid = el.presetSelect?.value || "";
+    return state.reportPresets.find((p) => p.id === pid) || null;
+  }
+
+  function renderPresetSummary() {
+    if (!el.presetSummary) return;
+    const preset = activePreset();
+    if (!preset) {
+      el.presetSummary.textContent = "No preset selected.";
+      return;
+    }
+
+    const srcName = preset.source?.name || "Research preset";
+    const srcUrl = preset.source?.url || "";
+    const seriesCount = Array.isArray(preset.series) ? preset.series.length : 0;
+    const formulaCount = Array.isArray(preset.formulas) ? preset.formulas.length : 0;
+
+    el.presetSummary.innerHTML = `
+      <strong>${preset.name}</strong> | ${preset.theme || "General"} | ${seriesCount} series | ${formulaCount} formulas
+      <br />
+      ${preset.description || ""}
+      ${srcUrl ? `<br /><a href="${srcUrl}" target="_blank" rel="noopener noreferrer">${srcName}</a>` : ""}
+    `;
+  }
+
+  function renderPresetOptions() {
+    if (!el.presetSelect) return;
+    el.presetSelect.innerHTML = "";
+    if (!state.reportPresets.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No preset library found";
+      el.presetSelect.appendChild(opt);
+      renderPresetSummary();
+      return;
+    }
+
+    state.reportPresets.forEach((p, i) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} [${p.theme || "General"}]`;
+      if (i === 0) opt.selected = true;
+      el.presetSelect.appendChild(opt);
+    });
+    renderPresetSummary();
+  }
+
+  function applyPreset(presetId, replace = true) {
+    const preset = state.reportPresets.find((p) => p.id === presetId);
+    if (!preset) {
+      setStatus(el.presetStatus, "Preset not found.", "error");
+      return null;
+    }
+
+    if (replace) {
+      state.selectedSeries = [];
+      state.rawSeries = new Map();
+      renderSelectedSeries();
+    }
+
+    (preset.series || []).forEach((s) => {
+      const provider = (s.provider || "fred").toLowerCase();
+      const id = String(s.id || "").trim();
+      if (!id) return;
+      upsertSeries(id, s.alias || id, s.title || "", provider, s.meta || null);
+    });
+
+    if (preset.default_date_start) el.startDate.value = preset.default_date_start;
+    if (preset.default_date_end) el.endDate.value = preset.default_date_end;
+    if (preset.default_chart_type && el.chartType) el.chartType.value = preset.default_chart_type;
+
+    if (Array.isArray(preset.formulas)) {
+      el.formulaInput.value = preset.formulas.join("\n");
+    }
+
+    renderPresetSummary();
+    setStatus(el.presetStatus, `Preset loaded: ${preset.name}.`, "ok");
+    return preset;
+  }
+
+  async function runPresetFlow(presetId, replace = true) {
+    const preset = applyPreset(presetId, replace);
+    if (!preset) return;
+
+    await pullSeriesData();
+    if (!state.dataRows.length) {
+      setStatus(el.presetStatus, "Preset loaded, but data pull returned no rows.", "error");
+      return;
+    }
+
+    if (Array.isArray(preset.formulas) && preset.formulas.length) {
+      applyFormulas();
+    }
+
+    if (Array.isArray(preset.default_plot_vars) && preset.default_plot_vars.length) {
+      setSelectedPlotVars(preset.default_plot_vars);
+    }
+
+    plotData();
+    setStatus(el.presetStatus, `Preset run complete: ${preset.name}.`, "ok");
+  }
+
+  function renderLibraryDetails(seriesId) {
+    if (!el.libraryDetails) return;
+    const s = state.seriesLookup.get(String(seriesId || "").toUpperCase());
+    if (!s) {
+      el.libraryDetails.textContent = "";
+      return;
+    }
+
+    const themes = Array.isArray(s.themes) && s.themes.length ? s.themes.join(", ") : "General";
+    const terms = Array.isArray(s.query_terms) ? s.query_terms.slice(0, 8).join(", ") : "";
+    const linked = Array.isArray(s.connected_series) ? s.connected_series : [];
+    const linkedText = linked.length
+      ? linked.slice(0, 6).map((x) => `${x.id} (${x.score})`).join(", ")
+      : "No linked series in current library.";
+
+    el.libraryDetails.innerHTML = `
+      <strong>${s.id}</strong> - ${s.title || ""}
+      <br />span: ${s.observation_start || "n/a"} to ${s.observation_end || "n/a"}${s.span_years != null ? ` (${s.span_years} years)` : ""}
+      <br />theme(s): ${themes}
+      <br />query terms: ${terms || "n/a"}
+      <br />commonly connected: ${linkedText}
+    `;
+  }
+
+  function filteredLibraryRows() {
+    const q = (el.librarySearch?.value || "").trim().toLowerCase();
+    const sortMode = el.librarySort?.value || "score_desc";
+
+    let rows = state.seriesLibrary.slice();
+    if (q) {
+      rows = rows.filter((s) => {
+        const blob = [
+          s.id,
+          s.title,
+          ...(s.themes || []),
+          ...(s.query_terms || [])
+        ].join(" ").toLowerCase();
+        return blob.includes(q);
+      });
+    }
+
+    rows.sort((a, b) => {
+      if (sortMode === "span_desc") {
+        return (b.span_years || -Infinity) - (a.span_years || -Infinity);
+      }
+      if (sortMode === "start_asc") {
+        return String(a.observation_start || "9999-99-99").localeCompare(String(b.observation_start || "9999-99-99"));
+      }
+      if (sortMode === "id_asc") {
+        return String(a.id).localeCompare(String(b.id));
+      }
+      return (b.popularity_score || 0) - (a.popularity_score || 0);
+    });
+
+    return rows;
+  }
+
+  function renderSeriesLibrary() {
+    if (!el.libraryTableBody) return;
+    el.libraryTableBody.innerHTML = "";
+
+    if (!state.seriesLibrary.length) {
+      setStatus(el.libraryStatus, "Series library unavailable. Run research build first.", "error");
+      return;
+    }
+
+    const rows = filteredLibraryRows().slice(0, 160);
+    rows.forEach((s) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><button class="btn btn-secondary" data-add-library="${s.id}">Add</button></td>
+        <td>${s.id}</td>
+        <td>${s.title || ""}</td>
+        <td>${s.observation_start || ""}</td>
+        <td>${s.observation_end || ""}</td>
+        <td>${s.span_years != null ? s.span_years : ""}</td>
+        <td><button class="btn btn-secondary" data-view-library="${s.id}">${(s.connected_series || []).length}</button></td>
+      `;
+      el.libraryTableBody.appendChild(tr);
+    });
+
+    el.libraryTableBody.querySelectorAll("[data-add-library]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-add-library");
+        const s = state.seriesLookup.get(String(id || "").toUpperCase());
+        upsertSeries(id, id, s?.title || "Top-100 series", "fred");
+        setStatus(el.fetchStatus, `Added FRED:${id} from top-100 library.`, "ok");
+      });
+    });
+
+    el.libraryTableBody.querySelectorAll("[data-view-library]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-view-library");
+        renderLibraryDetails(id);
+      });
+    });
+
+    setStatus(el.libraryStatus, `Showing ${rows.length} series (${filteredLibraryRows().length} after filter).`, "ok");
+  }
+
+  async function loadResearchData() {
+    try {
+      const presetText = await fetchText("data/research/report_presets.json");
+      state.reportPresets = JSON.parse(presetText);
+      renderPresetOptions();
+      setStatus(el.presetStatus, `Loaded ${state.reportPresets.length} report presets.`, "ok");
+    } catch (err) {
+      state.reportPresets = [];
+      renderPresetOptions();
+      setStatus(el.presetStatus, `Preset library unavailable: ${err.message}`, "error");
+    }
+
+    try {
+      const libraryText = await fetchText("data/research/series_library.json");
+      const libraryJson = JSON.parse(libraryText);
+      state.seriesLibrary = Array.isArray(libraryJson.series) ? libraryJson.series : [];
+      state.seriesLookup = new Map(state.seriesLibrary.map((s) => [String(s.id || "").toUpperCase(), s]));
+      renderSeriesLibrary();
+    } catch (err) {
+      state.seriesLibrary = [];
+      state.seriesLookup = new Map();
+      if (el.libraryTableBody) el.libraryTableBody.innerHTML = "";
+      setStatus(el.libraryStatus, `Series intelligence unavailable: ${err.message}`, "error");
+    }
   }
 
   function renderFredV2Catalog() {
@@ -1328,6 +1589,24 @@
       setStatus(el.fetchStatus, "Added TB3MS and GS10.", "ok");
     });
 
+    if (el.presetSelect) {
+      el.presetSelect.addEventListener("change", renderPresetSummary);
+    }
+    if (el.loadPreset) {
+      el.loadPreset.addEventListener("click", () => {
+        const pid = el.presetSelect?.value || "";
+        const replace = Boolean(el.replacePreset?.checked);
+        applyPreset(pid, replace);
+      });
+    }
+    if (el.runPreset) {
+      el.runPreset.addEventListener("click", async () => {
+        const pid = el.presetSelect?.value || "";
+        const replace = Boolean(el.replacePreset?.checked);
+        await runPresetFlow(pid, replace);
+      });
+    }
+
     if (el.addExternalCsv) {
       el.addExternalCsv.addEventListener("click", () => {
         const url = el.externalCsvUrl.value.trim();
@@ -1352,6 +1631,13 @@
 
     if (el.loadFredV2Bulk) {
       el.loadFredV2Bulk.addEventListener("click", loadFredV2Bulk);
+    }
+
+    if (el.librarySearch) {
+      el.librarySearch.addEventListener("input", renderSeriesLibrary);
+    }
+    if (el.librarySort) {
+      el.librarySort.addEventListener("change", renderSeriesLibrary);
     }
 
     el.fetchData.addEventListener("click", pullSeriesData);
@@ -1385,6 +1671,8 @@
       const msg = `Snapshot backend loaded (${fredCount} FRED v2 release snapshot${fredCount === 1 ? "" : "s"}${hasBls ? ", BLS included" : ""}).`;
       setStatus(el.fredV2Status, msg, "ok");
     });
+
+    loadResearchData();
   }
 
   wireEvents();
