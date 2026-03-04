@@ -1,19 +1,25 @@
 (() => {
   const state = {
     apiKey: localStorage.getItem("fred_api_key") || "",
+    blsApiKey: localStorage.getItem("bls_api_key") || "",
     selectedSeries: [], // [{id, alias, title}]
     rawSeries: new Map(), // alias -> [{date, value}]
     baseRows: [],
     dataRows: [],
     formulas: [], // [{name, expression}]
     chartReady: false,
-    catalogResults: []
+    catalogResults: [],
+    fredV2Catalog: [],
+    fredV2SeriesRows: new Map(), // series_id -> [{date, value}]
+    snapshotManifest: null,
+    blsSnapshotRows: new Map() // series_id -> rows
   };
 
   const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
 
   const el = {
     apiKey: document.getElementById("apiKey"),
+    blsApiKey: document.getElementById("blsApiKey"),
     saveApiKey: document.getElementById("saveApiKey"),
     catalogQuery: document.getElementById("catalogQuery"),
     catalogLimit: document.getElementById("catalogLimit"),
@@ -21,9 +27,20 @@
     catalogStatus: document.getElementById("catalogStatus"),
     catalogTableBody: document.querySelector("#catalogTable tbody"),
     manualSeriesId: document.getElementById("manualSeriesId"),
+    manualProvider: document.getElementById("manualProvider"),
     manualAlias: document.getElementById("manualAlias"),
     addManualSeries: document.getElementById("addManualSeries"),
     addYieldCurveSet: document.getElementById("addYieldCurveSet"),
+    externalCsvUrl: document.getElementById("externalCsvUrl"),
+    externalCsvDateColumn: document.getElementById("externalCsvDateColumn"),
+    externalCsvValueColumn: document.getElementById("externalCsvValueColumn"),
+    externalCsvAlias: document.getElementById("externalCsvAlias"),
+    addExternalCsv: document.getElementById("addExternalCsv"),
+    fredV2ReleaseId: document.getElementById("fredV2ReleaseId"),
+    fredV2Limit: document.getElementById("fredV2Limit"),
+    loadFredV2Bulk: document.getElementById("loadFredV2Bulk"),
+    fredV2Status: document.getElementById("fredV2Status"),
+    fredV2TableBody: document.querySelector("#fredV2Table tbody"),
     selectedSeries: document.getElementById("selectedSeries"),
     startDate: document.getElementById("startDate"),
     endDate: document.getElementById("endDate"),
@@ -82,6 +99,10 @@
     return rows.map((r) => ({ ...r }));
   }
 
+  function seriesKey(provider, id) {
+    return `${provider}:${id}`;
+  }
+
   function formatCount(n) {
     return new Intl.NumberFormat("en-US").format(n);
   }
@@ -100,12 +121,19 @@
     updateStats();
   }
 
-  async function fetchText(url) {
+  async function fetchText(url, options = undefined) {
+    const method = (options?.method || "GET").toUpperCase();
     try {
-      const direct = await fetch(url);
+      const direct = await fetch(url, options);
       if (direct.ok) return direct.text();
-    } catch (_) {
+      if (method !== "GET") {
+        throw new Error(`Request failed (${direct.status})`);
+      }
+    } catch (err) {
       // ignore direct failure, try proxy
+      if (method !== "GET") {
+        throw err;
+      }
     }
 
     const proxyUrl = PROXY_BASE + encodeURIComponent(url);
@@ -165,19 +193,108 @@
     return `${base}?${params.toString()}`;
   }
 
-  function upsertSeries(id, alias = "", title = "") {
-    const normId = id.trim().toUpperCase();
+  function fredV2ReleaseUrl(releaseId, apiKey, limit, cursor = "") {
+    const base = "https://api.stlouisfed.org/fred/v2/release/observations";
+    const params = new URLSearchParams({
+      release_id: String(releaseId),
+      format: "json",
+      api_key: apiKey,
+      limit: String(limit)
+    });
+    if (cursor) params.set("cursor", cursor);
+    return `${base}?${params.toString()}`;
+  }
+
+  async function fetchBlsSeries(seriesId, startDate, endDate, blsApiKey = "") {
+    const sYear = Number(startDate.slice(0, 4));
+    const eYear = Number(endDate.slice(0, 4));
+    const windows = [];
+    let y = sYear;
+    while (y <= eYear) {
+      const end = Math.min(y + 19, eYear);
+      windows.push([y, end]);
+      y = end + 1;
+    }
+
+    const all = [];
+    for (const [ws, we] of windows) {
+      const payload = {
+        seriesid: [seriesId],
+        startyear: String(ws),
+        endyear: String(we)
+      };
+      if (blsApiKey) payload.registrationkey = blsApiKey;
+
+      const resp = await fetchText("https://api.bls.gov/publicAPI/v2/timeseries/data/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      let json;
+      try {
+        json = JSON.parse(resp);
+      } catch {
+        throw new Error("Invalid JSON response from BLS API.");
+      }
+
+      if (json.status !== "REQUEST_SUCCEEDED") {
+        const msg = json?.message?.join(" | ") || "BLS request failed.";
+        throw new Error(msg);
+      }
+
+      const data = json?.Results?.series?.[0]?.data || [];
+      data.forEach((d) => {
+        if (!String(d.period).startsWith("M")) return;
+        if (d.period === "M13") return;
+        const mm = d.period.replace("M", "");
+        all.push({
+          date: `${d.year}-${mm}-01`,
+          value: d.value === "." ? null : Number(d.value)
+        });
+      });
+    }
+
+    return all.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async function fetchExternalCsvSeries(url, dateColumn, valueColumn, startDate, endDate) {
+    const csv = await fetchText(url);
+    const parsed = Papa.parse(csv, {
+      header: true,
+      dynamicTyping: false,
+      skipEmptyLines: true
+    });
+
+    if (parsed.errors.length) {
+      console.warn(parsed.errors);
+    }
+
+    const rows = parsed.data
+      .map((row) => ({
+        date: String(row[dateColumn] || "").slice(0, 10),
+        value: row[valueColumn] === "." ? null : Number(row[valueColumn])
+      }))
+      .filter((r) => r.date && (!Number.isNaN(r.value) || r.value === null))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return rows.filter((r) => (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
+  }
+
+  function upsertSeries(id, alias = "", title = "", provider = "fred", meta = null) {
+    const normId = provider === "csv" ? id.trim() : id.trim().toUpperCase();
     if (!normId) return;
-    if (state.selectedSeries.find((s) => s.id === normId)) return;
+    const key = seriesKey(provider, normId);
+    if (state.selectedSeries.find((s) => s.key === key)) return;
 
     const finalAlias = safeAlias(alias || normId);
-    state.selectedSeries.push({ id: normId, alias: finalAlias, title: title || "" });
+    state.selectedSeries.push({ id: normId, alias: finalAlias, title: title || "", provider, key, meta });
     renderSelectedSeries();
   }
 
-  function removeSeries(id) {
-    const target = state.selectedSeries.find((s) => s.id === id);
-    state.selectedSeries = state.selectedSeries.filter((s) => s.id !== id);
+  function removeSeries(key) {
+    const target = state.selectedSeries.find((s) => s.key === key);
+    state.selectedSeries = state.selectedSeries.filter((s) => s.key !== key);
     if (target) state.rawSeries.delete(target.alias);
     renderSelectedSeries();
   }
@@ -194,11 +311,11 @@
       row.className = "series-item";
       row.innerHTML = `
         <div>
-          <div><strong>${s.id}</strong></div>
+          <div><strong>${s.id}</strong> <span class="series-provider">${s.provider.toUpperCase()}</span></div>
           <div class="series-label">${s.title || "Manual series"}</div>
         </div>
-        <input data-series-alias="${s.id}" type="text" value="${s.alias}" />
-        <button data-remove-series="${s.id}" class="btn btn-secondary">Remove</button>
+        <input data-series-alias="${s.key}" type="text" value="${s.alias}" />
+        <button data-remove-series="${s.key}" class="btn btn-secondary">Remove</button>
       `;
       el.selectedSeries.appendChild(row);
     });
@@ -211,8 +328,8 @@
 
     el.selectedSeries.querySelectorAll("[data-series-alias]").forEach((input) => {
       input.addEventListener("change", () => {
-        const id = input.getAttribute("data-series-alias");
-        const idx = state.selectedSeries.findIndex((s) => s.id === id);
+        const key = input.getAttribute("data-series-alias");
+        const idx = state.selectedSeries.findIndex((s) => s.key === key);
         if (idx >= 0) {
           state.selectedSeries[idx].alias = safeAlias(input.value || state.selectedSeries[idx].id);
           input.value = state.selectedSeries[idx].alias;
@@ -270,9 +387,177 @@
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-add-catalog");
         const s = state.catalogResults.find((x) => x.id === id);
-        upsertSeries(id, id, s?.title || "");
+        upsertSeries(id, id, s?.title || "", "fred");
       });
     });
+  }
+
+  function renderFredV2Catalog() {
+    if (!el.fredV2TableBody) return;
+    el.fredV2TableBody.innerHTML = "";
+    state.fredV2Catalog.slice(0, 500).forEach((s) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><button class="btn btn-secondary" data-add-v2="${s.id}">Add</button></td>
+        <td>${s.id}</td>
+        <td>${s.title || ""}</td>
+        <td>${s.frequency || ""}</td>
+        <td>${s.obs_count ?? ""}</td>
+      `;
+      el.fredV2TableBody.appendChild(tr);
+    });
+
+    el.fredV2TableBody.querySelectorAll("[data-add-v2]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-add-v2");
+        const s = state.fredV2Catalog.find((x) => x.id === id);
+        upsertSeries(id, id, s?.title || "FRED v2 series", "fred");
+        setStatus(el.fetchStatus, `Added ${id} from FRED v2 bulk catalog.`, "ok");
+      });
+    });
+  }
+
+  async function loadSnapshotManifest() {
+    if (state.snapshotManifest) return state.snapshotManifest;
+    try {
+      const txt = await fetchText("data/snapshots/index.json");
+      const manifest = JSON.parse(txt);
+      state.snapshotManifest = manifest;
+      return manifest;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function applyFredV2SeriesData(seriesArray) {
+    state.fredV2Catalog = (seriesArray || []).map((s) => ({
+      id: String(s.id || "").toUpperCase(),
+      title: s.title || "",
+      frequency: s.frequency || "",
+      obs_count: Array.isArray(s.observations) ? s.observations.length : 0
+    })).filter((s) => s.id);
+
+    state.fredV2SeriesRows.clear();
+    (seriesArray || []).forEach((s) => {
+      const sid = String(s.id || "").toUpperCase();
+      if (!sid) return;
+      const rows = (Array.isArray(s.observations) ? s.observations : [])
+        .map((o) => ({
+          date: o.date,
+          value: o.value === "." ? null : Number(o.value)
+        }))
+        .filter((o) => o.date)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      state.fredV2SeriesRows.set(sid, rows);
+    });
+    renderFredV2Catalog();
+  }
+
+  async function tryLoadFredV2FromSnapshot(releaseId) {
+    const manifest = await loadSnapshotManifest();
+    if (!manifest?.fred_v2?.length) return false;
+    const hit = manifest.fred_v2.find((x) => x.ok && Number(x.release_id) === Number(releaseId) && x.file);
+    if (!hit) return false;
+
+    const txt = await fetchText(`data/snapshots/${hit.file}`);
+    const snap = JSON.parse(txt);
+    applyFredV2SeriesData(snap.series || []);
+    setStatus(el.fredV2Status, `Loaded FRED v2 release ${releaseId} from GitHub Pages snapshot.`, "ok");
+    return true;
+  }
+
+  async function ensureBlsSnapshotLoaded() {
+    if (state.blsSnapshotRows.size) return true;
+    const manifest = await loadSnapshotManifest();
+    const file = manifest?.bls?.ok && manifest?.bls?.file ? manifest.bls.file : null;
+    if (!file) return false;
+
+    const txt = await fetchText(`data/snapshots/${file}`);
+    const snap = JSON.parse(txt);
+    const series = Array.isArray(snap.series) ? snap.series : [];
+    series.forEach((s) => {
+      const sid = String(s.id || "").toUpperCase();
+      if (!sid) return;
+      const rows = (Array.isArray(s.observations) ? s.observations : [])
+        .map((o) => ({ date: o.date, value: o.value === "." ? null : Number(o.value) }))
+        .filter((o) => o.date)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      state.blsSnapshotRows.set(sid, rows);
+    });
+    return state.blsSnapshotRows.size > 0;
+  }
+
+  async function loadFredV2Bulk() {
+    const releaseId = Number(el.fredV2ReleaseId.value);
+    const limit = Math.min(Math.max(Number(el.fredV2Limit.value) || 100000, 1000), 500000);
+
+    if (!Number.isFinite(releaseId) || releaseId <= 0) {
+      setStatus(el.fredV2Status, "Enter a valid release ID.", "error");
+      return;
+    }
+
+    try {
+      const fromSnapshot = await tryLoadFredV2FromSnapshot(releaseId);
+      if (fromSnapshot) return;
+    } catch (_) {
+      // no snapshot or snapshot parse issue; continue with live pull
+    }
+
+    if (!state.apiKey) {
+      setStatus(el.fredV2Status, "No snapshot found and no FRED key set. Add key for live API v2 pull.", "error");
+      return;
+    }
+
+    setStatus(el.fredV2Status, `Loading FRED v2 release ${releaseId}...`);
+    let cursor = "";
+    let page = 0;
+    const bySeries = new Map();
+
+    try {
+      while (true) {
+        page += 1;
+        const url = fredV2ReleaseUrl(releaseId, state.apiKey, limit, cursor);
+        const json = await fetchJson(url);
+        const data = json?.data || [];
+
+        data.forEach((item) => {
+          const sid = String(item.series_id || "").toUpperCase();
+          if (!sid) return;
+          if (!bySeries.has(sid)) {
+            bySeries.set(sid, {
+              id: sid,
+              title: item.series_title || "",
+              frequency: item.frequency || "",
+              obs: []
+            });
+          }
+          const obs = Array.isArray(item.observations) ? item.observations : [];
+          obs.forEach((o) => {
+            bySeries.get(sid).obs.push({
+              date: o.date,
+              value: o.value === "." ? null : Number(o.value)
+            });
+          });
+        });
+
+        cursor = json?.meta?.next_cursor || "";
+        const hasMore = Boolean(json?.meta?.has_more);
+        setStatus(el.fredV2Status, `Loaded page ${page}. Series so far: ${bySeries.size}`, "ok");
+        if (!hasMore || !cursor || page >= 100) break;
+      }
+
+      applyFredV2SeriesData(
+        [...bySeries.values()].map((s) => ({
+          id: s.id,
+          title: s.title,
+          frequency: s.frequency,
+          observations: s.obs
+        }))
+      );
+      setStatus(el.fredV2Status, `FRED v2 bulk ready: ${state.fredV2Catalog.length} series loaded.`, "ok");
+    } catch (err) {
+      setStatus(el.fredV2Status, `FRED v2 bulk pull failed: ${err.message}`, "error");
+    }
   }
 
   async function pullSeriesData() {
@@ -299,13 +584,40 @@
     const fetched = new Map();
 
     for (const s of state.selectedSeries) {
-      const url = seriesCsvUrl(s.id, start, end);
       try {
-        const csv = await fetchText(url);
-        const rows = parseSeriesCsv(csv, s.id);
-        fetched.set(s.alias, rows);
+        if (s.provider === "fred") {
+          const cachedV2 = state.fredV2SeriesRows.get(s.id);
+          if (cachedV2 && cachedV2.length) {
+            const filtered = cachedV2.filter((r) => (!start || r.date >= start) && (!end || r.date <= end));
+            fetched.set(s.alias, filtered);
+          } else {
+            const url = seriesCsvUrl(s.id, start, end);
+            const csv = await fetchText(url);
+            const rows = parseSeriesCsv(csv, s.id);
+            fetched.set(s.alias, rows);
+          }
+        } else if (s.provider === "bls") {
+          const hasSnapshot = await ensureBlsSnapshotLoaded();
+          const snapRows = hasSnapshot ? state.blsSnapshotRows.get(s.id) : null;
+          if (snapRows && snapRows.length) {
+            const filtered = snapRows.filter((r) => (!start || r.date >= start) && (!end || r.date <= end));
+            fetched.set(s.alias, filtered);
+          } else {
+            const rows = await fetchBlsSeries(s.id, start || "1990-01-01", end || todayISO(), state.blsApiKey);
+            fetched.set(s.alias, rows);
+          }
+        } else if (s.provider === "csv") {
+          const url = s.meta?.url;
+          const dateColumn = s.meta?.dateColumn || "DATE";
+          const valueColumn = s.meta?.valueColumn || "value";
+          if (!url) throw new Error("Missing CSV URL metadata.");
+          const rows = await fetchExternalCsvSeries(url, dateColumn, valueColumn, start, end);
+          fetched.set(s.alias, rows);
+        } else {
+          throw new Error(`Unsupported provider: ${s.provider}`);
+        }
       } catch (err) {
-        setStatus(el.fetchStatus, `Failed on ${s.id}: ${err.message}`, "error");
+        setStatus(el.fetchStatus, `Failed on ${s.provider.toUpperCase()}:${s.id}: ${err.message}`, "error");
         return;
       }
     }
@@ -970,34 +1282,67 @@
   function wireEvents() {
     el.endDate.value = todayISO();
     el.apiKey.value = state.apiKey;
+    if (el.blsApiKey) el.blsApiKey.value = state.blsApiKey;
     if (el.sqlInput) el.sqlInput.value = "SELECT * FROM fred_data ORDER BY DATE";
 
     el.saveApiKey.addEventListener("click", () => {
       state.apiKey = el.apiKey.value.trim();
+      state.blsApiKey = el.blsApiKey?.value.trim() || "";
       localStorage.setItem("fred_api_key", state.apiKey);
-      setStatus(el.catalogStatus, state.apiKey ? "API key saved." : "API key cleared.", "ok");
+      localStorage.setItem("bls_api_key", state.blsApiKey);
+      const bits = [];
+      bits.push(state.apiKey ? "FRED key saved" : "FRED key cleared");
+      bits.push(state.blsApiKey ? "BLS key saved" : "BLS key cleared");
+      setStatus(el.catalogStatus, `${bits.join(" | ")}.`, "ok");
     });
 
     el.catalogSearch.addEventListener("click", searchCatalog);
 
     el.addManualSeries.addEventListener("click", () => {
+      const provider = el.manualProvider?.value || "fred";
       const id = el.manualSeriesId.value.trim().toUpperCase();
       const alias = el.manualAlias.value.trim();
       if (!id) {
         setStatus(el.fetchStatus, "Enter a series ID.", "error");
         return;
       }
-      upsertSeries(id, alias || id, "Manual series");
+      upsertSeries(id, alias || id, "Manual series", provider);
       el.manualSeriesId.value = "";
       el.manualAlias.value = "";
-      setStatus(el.fetchStatus, `Added ${id}.`, "ok");
+      setStatus(el.fetchStatus, `Added ${provider.toUpperCase()}:${id}.`, "ok");
     });
 
     el.addYieldCurveSet.addEventListener("click", () => {
-      upsertSeries("TB3MS", "TB3MS", "3-Month Treasury Bill");
-      upsertSeries("GS10", "GS10", "10-Year Treasury Note");
+      upsertSeries("TB3MS", "TB3MS", "3-Month Treasury Bill", "fred");
+      upsertSeries("GS10", "GS10", "10-Year Treasury Note", "fred");
       setStatus(el.fetchStatus, "Added TB3MS and GS10.", "ok");
     });
+
+    if (el.addExternalCsv) {
+      el.addExternalCsv.addEventListener("click", () => {
+        const url = el.externalCsvUrl.value.trim();
+        const dateColumn = (el.externalCsvDateColumn.value || "DATE").trim();
+        const valueColumn = (el.externalCsvValueColumn.value || "value").trim();
+        const alias = (el.externalCsvAlias.value || valueColumn || "external_value").trim();
+        if (!url) {
+          setStatus(el.fetchStatus, "Enter an external CSV URL.", "error");
+          return;
+        }
+        const id = `CSV_${Date.now()}`;
+        upsertSeries(
+          id,
+          alias,
+          `External CSV (${valueColumn})`,
+          "csv",
+          { url, dateColumn, valueColumn }
+        );
+        setStatus(el.fetchStatus, `Added external CSV source for ${valueColumn}.`, "ok");
+      });
+    }
+
+    if (el.loadFredV2Bulk) {
+      el.loadFredV2Bulk.addEventListener("click", loadFredV2Bulk);
+    }
 
     el.fetchData.addEventListener("click", pullSeriesData);
     el.clearData.addEventListener("click", clearAll);
@@ -1019,6 +1364,17 @@
     el.downloadXlsx.addEventListener("click", exportXlsx);
     el.exportPng.addEventListener("click", () => exportChart("png"));
     el.exportSvg.addEventListener("click", () => exportChart("svg"));
+
+    loadSnapshotManifest().then((manifest) => {
+      if (!manifest) {
+        setStatus(el.fredV2Status, "No static provider snapshot found. Live API mode ready.");
+        return;
+      }
+      const fredCount = (manifest.fred_v2 || []).filter((x) => x.ok).length;
+      const hasBls = Boolean(manifest.bls?.ok);
+      const msg = `Snapshot backend loaded (${fredCount} FRED v2 release snapshot${fredCount === 1 ? "" : "s"}${hasBls ? ", BLS included" : ""}).`;
+      setStatus(el.fredV2Status, msg, "ok");
+    });
   }
 
   wireEvents();

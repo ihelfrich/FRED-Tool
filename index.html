@@ -31,6 +31,8 @@
     <div class="topbar-actions" role="group" aria-label="API key controls">
       <label for="apiKey">FRED API Key</label>
       <input id="apiKey" type="password" placeholder="Required for catalog search" autocomplete="off" />
+      <label for="blsApiKey">BLS API Key</label>
+      <input id="blsApiKey" type="password" placeholder="Optional for higher BLS limits" autocomplete="off" />
       <button id="saveApiKey" class="btn btn-secondary">Save Key</button>
       <span class="build-pill" title="Deployed from GitHub Actions">Build: GitHub Actions</span>
     </div>
@@ -87,12 +89,55 @@
       <article class="card">
         <h3>Manual Add</h3>
         <div class="row">
+          <select id="manualProvider" aria-label="Data provider">
+            <option value="fred">FRED</option>
+            <option value="bls">BLS</option>
+          </select>
           <input id="manualSeriesId" type="text" placeholder="Series ID (e.g., GS10)" aria-label="Manual series ID" />
           <input id="manualAlias" type="text" placeholder="Alias (optional, e.g., long_rate)" aria-label="Manual alias" />
           <button id="addManualSeries" class="btn btn-primary">Add</button>
         </div>
         <div class="row">
           <button id="addYieldCurveSet" class="btn btn-secondary">Add Yield Curve Set (TB3MS + GS10)</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>External CSV Source</h3>
+        <p class="help">Import other public data sources with a date column and value column.</p>
+        <div class="row">
+          <input id="externalCsvUrl" type="text" placeholder="https://.../dataset.csv" aria-label="External CSV URL" />
+        </div>
+        <div class="row">
+          <input id="externalCsvDateColumn" type="text" value="DATE" placeholder="Date column" aria-label="External date column" />
+          <input id="externalCsvValueColumn" type="text" value="value" placeholder="Value column" aria-label="External value column" />
+          <input id="externalCsvAlias" type="text" placeholder="Alias (e.g., ext_var)" aria-label="External alias" />
+          <button id="addExternalCsv" class="btn btn-secondary">Add CSV Source</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>FRED API v2 Bulk Pull</h3>
+        <p class="help">Load an entire FRED release using API v2 cursor pagination, then add any series to your workspace.</p>
+        <div class="row">
+          <input id="fredV2ReleaseId" type="number" min="1" step="1" placeholder="Release ID (e.g., 53 for GDP)" aria-label="FRED v2 release id" />
+          <input id="fredV2Limit" type="number" min="1000" max="500000" step="1000" value="100000" aria-label="FRED v2 page limit" />
+          <button id="loadFredV2Bulk" class="btn btn-primary">Load Release</button>
+        </div>
+        <div id="fredV2Status" class="status" role="status" aria-live="polite"></div>
+        <div class="table-wrap compact">
+          <table id="fredV2Table">
+            <thead>
+              <tr>
+                <th>Add</th>
+                <th>Series ID</th>
+                <th>Title</th>
+                <th>Frequency</th>
+                <th>Obs</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </article>
 

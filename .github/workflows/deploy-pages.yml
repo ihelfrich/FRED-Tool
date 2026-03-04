@@ -3,6 +3,8 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: ["main"]
+  schedule:
+    - cron: "17 5 * * *"
   workflow_dispatch:
 
 permissions:
@@ -28,6 +30,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Build Provider Snapshots (FRED v2 + BLS)
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+        run: |
+          npm run data:build || echo "Snapshot step completed with warnings."
 
       - name: Build Static Site
         run: |

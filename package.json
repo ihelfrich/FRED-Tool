@@ -4,6 +4,7 @@
   "private": true,
   "description": "Live FRED data studio with formulas, visualization, and exports",
   "scripts": {
+    "data:build": "node scripts/fetch-provider-snapshots.mjs",
     "build": "node scripts/build.mjs",
     "test:smoke": "node scripts/smoke-check.mjs"
   }

@@ -102,7 +102,7 @@ body {
 
 .topbar-actions {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(150px, 1fr) auto minmax(150px, 1fr) auto;
   align-items: center;
   gap: 0.42rem;
   background: rgba(255, 255, 255, 0.83);
@@ -129,6 +129,10 @@ body {
   border-radius: 999px;
   padding: 0.12rem 0.5rem;
   font-weight: 600;
+}
+
+#manualProvider {
+  max-width: 120px;
 }
 
 .stat-strip {
@@ -354,6 +358,19 @@ tbody tr:nth-child(odd) {
 .series-label {
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.series-provider {
+  display: inline-block;
+  margin-left: 0.3rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid #b5d3e3;
+  color: #0f5f7f;
+  border-radius: 999px;
+  padding: 0.04rem 0.34rem;
+  vertical-align: middle;
 }
 
 .pill-list {

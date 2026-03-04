@@ -7,6 +7,8 @@ const required = [
   "index.html",
   "styles.css",
   "app.js",
+  "config/providers.config.json",
+  "scripts/fetch-provider-snapshots.mjs",
   ".github/workflows/deploy-pages.yml",
   "dist/index.html",
   "dist/styles.css",
@@ -37,6 +39,9 @@ async function run() {
     'id="chart"',
     'id="formulaInput"',
     'id="sqlInput"',
+    'id="blsApiKey"',
+    'id="fredV2ReleaseId"',
+    'id="externalCsvUrl"',
     'id="sceneBg"',
     "three.min.js",
     "alasql"
@@ -52,6 +57,9 @@ async function run() {
     "function initThreeScene()",
     "function applyFormulas()",
     "function runSqlQuery()",
+    "function loadFredV2Bulk()",
+    "function fetchBlsSeries(",
+    "function fetchExternalCsvSeries(",
     "function plotData()"
   ];
   for (const token of jsChecks) {

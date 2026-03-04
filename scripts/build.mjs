@@ -13,6 +13,13 @@ async function run() {
     await cp(resolve(root, f), resolve(dist, f));
   }
 
+  // Copy static provider snapshots if present (generated in Actions by data:build)
+  try {
+    await cp(resolve(root, "data"), resolve(dist, "data"), { recursive: true });
+  } catch (_) {
+    // optional
+  }
+
   const now = new Date().toISOString();
   const indexPath = resolve(dist, "index.html");
   const html = await readFile(indexPath, "utf8");

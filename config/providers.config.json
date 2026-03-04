@@ -1,0 +1,9 @@
+{
+  "fred_v2_release_ids": [53],
+  "bls_series_ids": [
+    "LNS14000000",
+    "CES0000000001",
+    "CUUR0000SA0"
+  ],
+  "bls_start_year": 2000
+}
