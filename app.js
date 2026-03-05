@@ -19,7 +19,8 @@
     seriesLibrary: [],
     seriesLookup: new Map(),
     providerSeriesCatalog: [],
-    providerSeriesLookup: new Map()
+    providerSeriesLookup: new Map(),
+    plotSelectedVars: new Set()
   };
 
   const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
@@ -80,11 +81,22 @@
     resetSql: document.getElementById("resetSql"),
     sqlStatus: document.getElementById("sqlStatus"),
     chartType: document.getElementById("chartType"),
+    seriesTransform: document.getElementById("seriesTransform"),
+    yScaleMode: document.getElementById("yScaleMode"),
+    smoothWindow: document.getElementById("smoothWindow"),
+    chartHeight: document.getElementById("chartHeight"),
+    chartHeightValue: document.getElementById("chartHeightValue"),
+    plotVarSearch: document.getElementById("plotVarSearch"),
+    plotSelectAll: document.getElementById("plotSelectAll"),
+    plotSelectCore: document.getElementById("plotSelectCore"),
+    plotSelectNone: document.getElementById("plotSelectNone"),
     plotSeries: document.getElementById("plotSeries"),
     shadeInversions: document.getElementById("shadeInversions"),
     plotBtn: document.getElementById("plotBtn"),
+    expandChart: document.getElementById("expandChart"),
     exportPng: document.getElementById("exportPng"),
     exportSvg: document.getElementById("exportSvg"),
+    plotMeta: document.getElementById("plotMeta"),
     plotStatus: document.getElementById("plotStatus"),
     chart: document.getElementById("chart"),
     statSeries: document.getElementById("statSeries"),
@@ -609,10 +621,8 @@
   }
 
   function setSelectedPlotVars(varNames = []) {
-    const want = new Set((varNames || []).map((x) => String(x)));
-    [...el.plotSeries.options].forEach((o) => {
-      o.selected = want.has(o.value);
-    });
+    state.plotSelectedVars = new Set((varNames || []).map((x) => String(x)));
+    updatePlotSeriesOptions();
   }
 
   function activePreset() {
@@ -1339,7 +1349,147 @@
   }
 
   function getSelectedPlotVars() {
-    return [...el.plotSeries.selectedOptions].map((o) => o.value);
+    const vars = getVariableNames();
+    return [...state.plotSelectedVars].filter((v) => vars.includes(v));
+  }
+
+  function syncPlotSelectionFromUI() {
+    if (!el.plotSeries) return;
+    const visible = [...el.plotSeries.options].map((o) => o.value);
+    const selectedVisible = new Set([...el.plotSeries.selectedOptions].map((o) => o.value));
+    visible.forEach((v) => {
+      if (selectedVisible.has(v)) state.plotSelectedVars.add(v);
+      else state.plotSelectedVars.delete(v);
+    });
+    updatePlotMeta();
+  }
+
+  function selectPlotVariables(mode = "all") {
+    const vars = getVariableNames();
+    if (mode === "none") {
+      state.plotSelectedVars.clear();
+    } else if (mode === "core") {
+      state.plotSelectedVars.clear();
+      const seeded = state.selectedSeries.map((s) => s.alias).filter((v) => vars.includes(v)).slice(0, 8);
+      seeded.forEach((v) => state.plotSelectedVars.add(v));
+      if (!seeded.length) vars.slice(0, 8).forEach((v) => state.plotSelectedVars.add(v));
+    } else {
+      state.plotSelectedVars = new Set(vars);
+    }
+    updatePlotSeriesOptions();
+    updatePlotMeta();
+  }
+
+  function getSeriesValues(varName) {
+    return state.dataRows.map((r) => {
+      const n = Number(r[varName]);
+      return Number.isFinite(n) ? n : null;
+    });
+  }
+
+  function transformValues(values, mode) {
+    if (mode === "none") return values.slice();
+    const finite = values.filter((v) => Number.isFinite(v));
+    if (!finite.length) return values.map(() => null);
+
+    if (mode === "index100") {
+      const base = finite[0];
+      if (!Number.isFinite(base) || base === 0) return values.map(() => null);
+      return values.map((v) => (Number.isFinite(v) ? (v / base) * 100 : null));
+    }
+
+    if (mode === "pct_change") {
+      const out = new Array(values.length).fill(null);
+      let prev = null;
+      values.forEach((v, i) => {
+        if (!Number.isFinite(v)) return;
+        if (Number.isFinite(prev) && prev !== 0) {
+          out[i] = ((v / prev) - 1) * 100;
+        }
+        prev = v;
+      });
+      return out;
+    }
+
+    if (mode === "zscore") {
+      const mean = finite.reduce((p, c) => p + c, 0) / finite.length;
+      const variance = finite.reduce((p, c) => p + ((c - mean) ** 2), 0) / finite.length;
+      const sd = Math.sqrt(variance);
+      if (!Number.isFinite(sd) || sd === 0) return values.map(() => null);
+      return values.map((v) => (Number.isFinite(v) ? (v - mean) / sd : null));
+    }
+
+    return values.slice();
+  }
+
+  function smoothValues(values, windowSize) {
+    const w = Math.max(1, Math.min(120, Number(windowSize) || 1));
+    if (w <= 1) return values.slice();
+    const out = new Array(values.length).fill(null);
+    for (let i = 0; i < values.length; i += 1) {
+      const start = Math.max(0, i - w + 1);
+      let sum = 0;
+      let n = 0;
+      for (let j = start; j <= i; j += 1) {
+        if (Number.isFinite(values[j])) {
+          sum += values[j];
+          n += 1;
+        }
+      }
+      out[i] = n ? sum / n : null;
+    }
+    return out;
+  }
+
+  function computePlotSeriesMap(selectedVars) {
+    const transformMode = el.seriesTransform?.value || "none";
+    const smoothWindow = Math.max(1, Number(el.smoothWindow?.value) || 1);
+    const out = new Map();
+    selectedVars.forEach((v) => {
+      const raw = getSeriesValues(v);
+      const transformed = transformValues(raw, transformMode);
+      out.set(v, smoothValues(transformed, smoothWindow));
+    });
+    return out;
+  }
+
+  function updatePlotMeta() {
+    if (!el.plotMeta) return;
+    const selected = getSelectedPlotVars();
+    const transformMode = el.seriesTransform?.value || "none";
+    const smoothWindow = Math.max(1, Number(el.smoothWindow?.value) || 1);
+    const yScale = el.yScaleMode?.value || "linear";
+    const h = Number(el.chartHeight?.value) || 700;
+    el.plotMeta.textContent = `selected ${selected.length} | transform ${transformMode} | smooth ${smoothWindow} | y-scale ${yScale} | height ${h}px`;
+  }
+
+  function setChartHeight() {
+    const h = Number(el.chartHeight?.value) || 700;
+    if (el.chartHeightValue) el.chartHeightValue.textContent = `${h}px`;
+    if (el.chart) el.chart.style.height = `${h}px`;
+    if (state.chartReady && typeof Plotly !== "undefined") {
+      try {
+        Plotly.Plots.resize(el.chart);
+      } catch (_) {
+        // ignore resize issues when chart not initialized
+      }
+    }
+    updatePlotMeta();
+  }
+
+  function toggleChartExpand() {
+    const next = !document.body.classList.contains("chart-expanded");
+    document.body.classList.toggle("chart-expanded", next);
+    if (el.expandChart) el.expandChart.textContent = next ? "Collapse" : "Expand";
+    setTimeout(() => {
+      if (state.chartReady && typeof Plotly !== "undefined") {
+        try {
+          Plotly.Plots.resize(el.chart);
+        } catch (_) {
+          // no-op
+        }
+      }
+    }, 120);
   }
 
   function computeInversionShapes(xDates, ySpread) {
@@ -1396,9 +1546,12 @@
 
     const x = state.dataRows.map((r) => r.DATE);
     const type = el.chartType.value;
+    const transformMode = el.seriesTransform?.value || "none";
+    const smoothWindow = Math.max(1, Number(el.smoothWindow?.value) || 1);
+    const yScaleMode = el.yScaleMode?.value || "linear";
     const baseLayout = {
       title: {
-        text: "FRED Visualization",
+        text: `FRED Visualization${transformMode !== "none" ? ` [${transformMode}]` : ""}${smoothWindow > 1 ? ` [MA ${smoothWindow}]` : ""}`,
         font: { family: "Fraunces, serif", size: 20, color: "#11334b" }
       },
       paper_bgcolor: "#ffffff",
@@ -1415,13 +1568,15 @@
         title: "Value",
         gridcolor: "#e7edf4",
         linecolor: "#bcd0e0",
-        tickfont: { color: "#34556e" }
+        tickfont: { color: "#34556e" },
+        type: yScaleMode === "log" ? "log" : "linear"
       },
       colorway: ["#0a7ea4", "#d07b00", "#206a4b", "#8d4f2b", "#4f6ea5", "#a33d3d"],
       legend: { orientation: "h", y: -0.2 },
       shapes: [],
       uirevision: "static"
     };
+    const seriesMap = computePlotSeriesMap(selectedVars);
 
     if (type === "corr_heatmap") {
       if (selectedVars.length < 2) {
@@ -1433,14 +1588,16 @@
         return selectedVars.map((v2) => {
           const a = [];
           const b = [];
-          state.dataRows.forEach((row) => {
-            const x1 = Number(row[v1]);
-            const x2 = Number(row[v2]);
+          const s1 = seriesMap.get(v1) || [];
+          const s2 = seriesMap.get(v2) || [];
+          for (let i = 0; i < Math.min(s1.length, s2.length); i += 1) {
+            const x1 = s1[i];
+            const x2 = s2[i];
             if (Number.isFinite(x1) && Number.isFinite(x2)) {
               a.push(x1);
               b.push(x2);
             }
-          });
+          }
           if (a.length < 2) return null;
           const ma = a.reduce((p, c) => p + c, 0) / a.length;
           const mb = b.reduce((p, c) => p + c, 0) / b.length;
@@ -1487,6 +1644,12 @@
       if (!canUseSpreadVar && !(hasGS10 && hasTB3MS)) {
         setStatus(el.plotStatus, "Yield dashboard needs YC_SPREAD or both GS10 and TB3MS.", "error");
         return;
+      }
+      if (transformMode !== "none" || smoothWindow > 1) {
+        setStatus(el.plotStatus, "Yield dashboard uses raw levels; transform/smoothing controls are ignored here.", "ok");
+      }
+      if (yScaleMode === "log") {
+        setStatus(el.plotStatus, "Yield dashboard forced to linear scale because spread can be negative.", "ok");
       }
 
       const gs10 = state.dataRows.map((r) => Number.isFinite(Number(r.GS10)) ? Number(r.GS10) : null);
@@ -1573,7 +1736,7 @@
         mode: "lines",
         name: v,
         x,
-        y: state.dataRows.map((r) => (r[v] === undefined ? null : r[v])),
+        y: seriesMap.get(v) || [],
         z: state.dataRows.map(() => idx + 1),
         line: { width: 4 }
       }));
@@ -1603,7 +1766,7 @@
       mode,
       name: v,
       x,
-      y: state.dataRows.map((r) => (r[v] === undefined ? null : r[v])),
+      y: seriesMap.get(v) || [],
       line: { width: 2 }
     }));
 
@@ -1614,9 +1777,17 @@
       layout.shapes = computeInversionShapes(x, ySpread);
     }
 
+    let logNote = "";
+    if (yScaleMode === "log") {
+      const nonPositive = traces.some((t) => (t.y || []).some((v) => Number.isFinite(v) && v <= 0));
+      if (nonPositive) logNote = " | non-positive hidden on log scale";
+    }
+
     Plotly.newPlot(el.chart, traces, layout, { responsive: true, displaylogo: false });
     state.chartReady = true;
-    setStatus(el.plotStatus, `Plotted ${selectedVars.length} series.`, "ok");
+    const finiteCount = traces.reduce((acc, t) => acc + (Array.isArray(t.y) ? t.y.filter((v) => Number.isFinite(v)).length : 0), 0);
+    setStatus(el.plotStatus, `Plotted ${selectedVars.length} series (${finiteCount} finite points)${logNote}.`, "ok");
+    updatePlotMeta();
   }
 
   function refreshVariableUI() {
@@ -1633,22 +1804,29 @@
 
   function updatePlotSeriesOptions() {
     const vars = getVariableNames();
+    const query = (el.plotVarSearch?.value || "").trim().toLowerCase();
+    const seeded = state.selectedSeries.map((s) => s.alias).filter((v) => vars.includes(v));
+    const currentSelected = new Set([...state.plotSelectedVars].filter((v) => vars.includes(v)));
+    state.plotSelectedVars = currentSelected;
+
+    if (!state.plotSelectedVars.size && seeded.length) {
+      seeded.forEach((v) => state.plotSelectedVars.add(v));
+    }
+    if (!state.plotSelectedVars.size && vars.includes("YC_SPREAD")) {
+      state.plotSelectedVars.add("YC_SPREAD");
+    }
+
     el.plotSeries.innerHTML = "";
-    vars.forEach((v) => {
+    vars
+      .filter((v) => !query || v.toLowerCase().includes(query))
+      .forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
-      if (state.selectedSeries.some((s) => s.alias === v)) {
-        opt.selected = true;
-      }
+      opt.selected = state.plotSelectedVars.has(v);
       el.plotSeries.appendChild(opt);
-    });
-
-    if (vars.includes("YC_SPREAD") && ![...el.plotSeries.options].some((o) => o.selected && o.value === "YC_SPREAD")) {
-      [...el.plotSeries.options].forEach((o) => {
-        if (o.value === "YC_SPREAD") o.selected = true;
       });
-    }
+    updatePlotMeta();
   }
 
   function renderPreview() {
@@ -1730,7 +1908,10 @@
     state.baseRows = [];
     state.dataRows = [];
     state.formulas = [];
+    state.plotSelectedVars = new Set();
     state.chartReady = false;
+    document.body.classList.remove("chart-expanded");
+    if (el.expandChart) el.expandChart.textContent = "Expand";
     el.formulaInput.value = "";
     if (el.sqlInput) el.sqlInput.value = "SELECT * FROM fred_data ORDER BY DATE";
     el.plotSeries.innerHTML = "";
@@ -1744,6 +1925,7 @@
     setStatus(el.plotStatus, "");
     setStatus(el.previewStatus, "No data rows yet.");
     updateStats();
+    updatePlotMeta();
   }
 
   function initThreeScene() {
@@ -1960,6 +2142,46 @@
         : snippet;
     });
 
+    if (el.plotSeries) {
+      el.plotSeries.addEventListener("change", syncPlotSelectionFromUI);
+    }
+    if (el.plotVarSearch) {
+      el.plotVarSearch.addEventListener("input", updatePlotSeriesOptions);
+    }
+    if (el.plotSelectAll) {
+      el.plotSelectAll.addEventListener("click", () => selectPlotVariables("all"));
+    }
+    if (el.plotSelectCore) {
+      el.plotSelectCore.addEventListener("click", () => selectPlotVariables("core"));
+    }
+    if (el.plotSelectNone) {
+      el.plotSelectNone.addEventListener("click", () => selectPlotVariables("none"));
+    }
+    if (el.seriesTransform) {
+      el.seriesTransform.addEventListener("change", updatePlotMeta);
+    }
+    if (el.chartType) {
+      el.chartType.addEventListener("change", updatePlotMeta);
+    }
+    if (el.smoothWindow) {
+      el.smoothWindow.addEventListener("change", updatePlotMeta);
+    }
+    if (el.yScaleMode) {
+      el.yScaleMode.addEventListener("change", updatePlotMeta);
+    }
+    if (el.chartHeight) {
+      el.chartHeight.addEventListener("input", setChartHeight);
+      el.chartHeight.addEventListener("change", setChartHeight);
+    }
+    if (el.expandChart) {
+      el.expandChart.addEventListener("click", toggleChartExpand);
+    }
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && document.body.classList.contains("chart-expanded")) {
+        toggleChartExpand();
+      }
+    });
+
     el.plotBtn.addEventListener("click", plotData);
 
     el.downloadCsv.addEventListener("click", exportCsv);
@@ -1979,6 +2201,8 @@
     });
 
     loadResearchData();
+    setChartHeight();
+    updatePlotMeta();
   }
 
   wireEvents();

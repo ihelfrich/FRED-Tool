@@ -260,7 +260,7 @@ YC_INVERTED = YC_SPREAD < 0"></textarea>
 
       <article class="card chart-card">
         <h3>Visualization Studio</h3>
-        <div class="row row-grid-controls">
+        <div class="studio-toolbar">
           <div class="control-box">
             <label for="chartType">Chart Type</label>
             <select id="chartType">
@@ -273,24 +273,60 @@ YC_INVERTED = YC_SPREAD < 0"></textarea>
             </select>
           </div>
 
-          <div class="control-box wide">
-            <label for="plotSeries">Variables to Plot</label>
-            <select id="plotSeries" multiple size="7" aria-label="Variables to plot"></select>
+          <div class="control-box">
+            <label for="seriesTransform">Series Transform</label>
+            <select id="seriesTransform">
+              <option value="none">None</option>
+              <option value="index100">Index to 100 at first value</option>
+              <option value="pct_change">Percent change (%)</option>
+              <option value="zscore">Standardized (z-score)</option>
+            </select>
+          </div>
+
+          <div class="control-box">
+            <label for="yScaleMode">Y-axis Scale</label>
+            <select id="yScaleMode">
+              <option value="linear">Linear</option>
+              <option value="log">Log</option>
+            </select>
+          </div>
+
+          <div class="control-box">
+            <label for="smoothWindow">Smoothing Window</label>
+            <input id="smoothWindow" type="number" min="1" max="24" step="1" value="1" />
+          </div>
+
+          <div class="control-box">
+            <label for="chartHeight">Chart Height <span id="chartHeightValue">700px</span></label>
+            <input id="chartHeight" type="range" min="520" max="1100" step="20" value="700" />
           </div>
 
           <div class="control-box">
             <label class="checkbox" for="shadeInversions">
-              <input id="shadeInversions" type="checkbox" /> Shade inversion windows when <code>YC_SPREAD</code> exists
+              <input id="shadeInversions" type="checkbox" /> Shade inversion windows with <code>YC_SPREAD</code>
             </label>
           </div>
         </div>
 
-        <div class="row">
+        <div class="control-box wide">
+          <label for="plotSeries">Variables to Plot</label>
+          <div class="row plot-series-tools">
+            <input id="plotVarSearch" type="text" placeholder="Filter variables..." aria-label="Filter plot variables" />
+            <button id="plotSelectAll" class="btn btn-secondary">All</button>
+            <button id="plotSelectCore" class="btn btn-secondary">Top 8</button>
+            <button id="plotSelectNone" class="btn btn-secondary">None</button>
+          </div>
+          <select id="plotSeries" multiple size="12" aria-label="Variables to plot"></select>
+        </div>
+
+        <div class="row chart-actions">
           <button id="plotBtn" class="btn btn-primary">Render Plot</button>
+          <button id="expandChart" class="btn btn-secondary">Expand</button>
           <button id="exportPng" class="btn btn-secondary">Export PNG</button>
           <button id="exportSvg" class="btn btn-secondary">Export SVG</button>
         </div>
 
+        <div id="plotMeta" class="help"></div>
         <div id="plotStatus" class="status" role="status" aria-live="polite"></div>
         <div id="chart" aria-label="Data chart"></div>
       </article>
