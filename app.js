@@ -2,6 +2,8 @@
   const state = {
     apiKey: localStorage.getItem("fred_api_key") || "",
     blsApiKey: localStorage.getItem("bls_api_key") || "",
+    beaApiKey: localStorage.getItem("bea_api_key") || "",
+    censusApiKey: localStorage.getItem("census_api_key") || "",
     selectedSeries: [], // [{id, alias, title}]
     rawSeries: new Map(), // alias -> [{date, value}]
     baseRows: [],
@@ -15,7 +17,9 @@
     blsSnapshotRows: new Map(), // series_id -> rows
     reportPresets: [],
     seriesLibrary: [],
-    seriesLookup: new Map()
+    seriesLookup: new Map(),
+    providerSeriesCatalog: [],
+    providerSeriesLookup: new Map()
   };
 
   const PROXY_BASE = "https://api.codetabs.com/v1/proxy/?quest=";
@@ -23,6 +27,8 @@
   const el = {
     apiKey: document.getElementById("apiKey"),
     blsApiKey: document.getElementById("blsApiKey"),
+    beaApiKey: document.getElementById("beaApiKey"),
+    censusApiKey: document.getElementById("censusApiKey"),
     saveApiKey: document.getElementById("saveApiKey"),
     catalogQuery: document.getElementById("catalogQuery"),
     catalogLimit: document.getElementById("catalogLimit"),
@@ -40,6 +46,10 @@
     replacePreset: document.getElementById("replacePreset"),
     presetSummary: document.getElementById("presetSummary"),
     presetStatus: document.getElementById("presetStatus"),
+    providerSeriesSelect: document.getElementById("providerSeriesSelect"),
+    addProviderSeries: document.getElementById("addProviderSeries"),
+    providerSeriesMeta: document.getElementById("providerSeriesMeta"),
+    providerSeriesStatus: document.getElementById("providerSeriesStatus"),
     externalCsvUrl: document.getElementById("externalCsvUrl"),
     externalCsvDateColumn: document.getElementById("externalCsvDateColumn"),
     externalCsvValueColumn: document.getElementById("externalCsvValueColumn"),
@@ -305,6 +315,177 @@
     return rows.filter((r) => (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
   }
 
+  function parseNumericValue(raw) {
+    if (raw === null || raw === undefined) return null;
+    const s = String(raw).trim();
+    if (!s || s === "." || s === "NA" || s === "N/A" || s === "(NA)") return null;
+    const neg = s.startsWith("(") && s.endsWith(")");
+    const normalized = s.replace(/[,%\s]/g, "").replace(/[()]/g, "");
+    const num = Number(normalized);
+    if (!Number.isFinite(num)) return null;
+    return neg ? -num : num;
+  }
+
+  function normalizePeriodToDate(period) {
+    const p = String(period || "").trim();
+    if (!p) return "";
+    let m = p.match(/^(\d{4})Q([1-4])$/i);
+    if (m) {
+      const month = ["01", "04", "07", "10"][Number(m[2]) - 1];
+      return `${m[1]}-${month}-01`;
+    }
+    m = p.match(/^(\d{4})M(\d{2})$/i);
+    if (m) return `${m[1]}-${m[2]}-01`;
+    m = p.match(/^(\d{4})-(\d{2})$/);
+    if (m) return `${m[1]}-${m[2]}-01`;
+    m = p.match(/^(\d{4})$/);
+    if (m) return `${m[1]}-01-01`;
+    m = p.match(/^(\d{4}-\d{2}-\d{2})$/);
+    if (m) return m[1];
+    return "";
+  }
+
+  async function fetchBeaSeries(meta, startDate, endDate, beaApiKey = "") {
+    if (!beaApiKey) {
+      throw new Error("BEA API key required. Add it in the top key controls.");
+    }
+    if (!meta?.datasetname || !meta?.tablename) {
+      throw new Error("BEA metadata missing dataset/table configuration.");
+    }
+
+    const params = new URLSearchParams({
+      UserID: beaApiKey,
+      method: "GetData",
+      datasetname: String(meta.datasetname),
+      TableName: String(meta.tablename),
+      Frequency: String(meta.frequency || "Q"),
+      Year: String(meta.year || "ALL"),
+      ResultFormat: "JSON"
+    });
+    if (meta.linenumber) params.set("LineNumber", String(meta.linenumber));
+    if (meta.series_code) params.set("SeriesCode", String(meta.series_code));
+
+    const url = `https://apps.bea.gov/api/data?${params.toString()}`;
+    const json = await fetchJson(url);
+    const apiErr = json?.BEAAPI?.Results?.Error;
+    if (apiErr?.APIErrorDescription) {
+      throw new Error(apiErr.APIErrorDescription);
+    }
+
+    const rows = Array.isArray(json?.BEAAPI?.Results?.Data) ? json.BEAAPI.Results.Data : [];
+    const out = rows
+      .map((r) => ({
+        date: normalizePeriodToDate(r.TimePeriod),
+        value: parseNumericValue(r.DataValue)
+      }))
+      .filter((r) => r.date && (r.value === null || Number.isFinite(r.value)))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return out.filter((r) => (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
+  }
+
+  async function fetchTreasurySeries(meta, startDate, endDate) {
+    if (!meta?.endpoint || !meta?.date_field || !meta?.value_field) {
+      throw new Error("Treasury metadata missing endpoint/date/value fields.");
+    }
+
+    const base = `https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/${String(meta.endpoint).replace(/^\/+/, "")}`;
+    const fields = [meta.date_field, meta.value_field, ...(meta.extra_fields || [])]
+      .map((x) => String(x || "").trim())
+      .filter(Boolean)
+      .join(",");
+
+    const filterRules = [];
+    const dateField = String(meta.date_field);
+    if (startDate) filterRules.push(`${dateField}:gte:${startDate}`);
+    if (endDate) filterRules.push(`${dateField}:lte:${endDate}`);
+
+    const staticFilters = meta.filters || {};
+    Object.keys(staticFilters).forEach((k) => {
+      const val = staticFilters[k];
+      if (val === undefined || val === null || val === "") return;
+      filterRules.push(`${k}:eq:${val}`);
+    });
+
+    let page = 1;
+    let totalPages = 1;
+    const all = [];
+
+    while (page <= totalPages && page <= 250) {
+      const params = new URLSearchParams({
+        fields,
+        sort: dateField,
+        "page[number]": String(page),
+        "page[size]": String(meta.page_size || 1000)
+      });
+      if (filterRules.length) {
+        params.set("filter", filterRules.join(","));
+      }
+
+      const url = `${base}?${params.toString()}`;
+      const json = await fetchJson(url);
+      const rows = Array.isArray(json?.data) ? json.data : [];
+      rows.forEach((r) => {
+        const date = normalizePeriodToDate(r[dateField]);
+        const value = parseNumericValue(r[meta.value_field]);
+        if (!date) return;
+        if (value === null || Number.isFinite(value)) {
+          all.push({ date, value });
+        }
+      });
+
+      const tp = Number(json?.meta?.["total-pages"] || 1);
+      totalPages = Number.isFinite(tp) && tp > 0 ? tp : 1;
+      page += 1;
+    }
+
+    return all.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async function fetchCensusSeries(meta, startDate, endDate, censusApiKey = "") {
+    if (!meta?.endpoint || !meta?.value_field) {
+      throw new Error("Census metadata missing endpoint/value field.");
+    }
+    const getFields = Array.isArray(meta.get_fields) && meta.get_fields.length ? meta.get_fields : [meta.value_field];
+    const params = new URLSearchParams({
+      get: getFields.join(",")
+    });
+
+    const tf = String(meta.time_field || "time");
+    const startTime = startDate ? startDate.slice(0, 7) : String(meta.default_time_from || "2000-01");
+    params.set(tf, `from ${startTime}`);
+
+    const preds = meta.predicates || {};
+    Object.keys(preds).forEach((k) => {
+      params.set(k, String(preds[k]));
+    });
+    if (censusApiKey) params.set("key", censusApiKey);
+
+    const endpoint = String(meta.endpoint).replace(/^\/+/, "");
+    const url = `https://api.census.gov/data/${endpoint}?${params.toString()}`;
+    const json = await fetchJson(url);
+    if (!Array.isArray(json) || json.length < 2) {
+      throw new Error("Unexpected response from Census API.");
+    }
+
+    const headers = json[0].map((x) => String(x));
+    const valueIdx = headers.indexOf(String(meta.value_field));
+    const timeIdx = headers.indexOf(tf);
+    if (valueIdx < 0 || timeIdx < 0) {
+      throw new Error("Census response missing expected time/value fields.");
+    }
+
+    const out = json.slice(1)
+      .map((row) => ({
+        date: normalizePeriodToDate(row[timeIdx]),
+        value: parseNumericValue(row[valueIdx])
+      }))
+      .filter((r) => r.date && (r.value === null || Number.isFinite(r.value)))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return out.filter((r) => (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
+  }
+
   function upsertSeries(id, alias = "", title = "", provider = "fred", meta = null) {
     const normId = provider === "csv" ? id.trim() : id.trim().toUpperCase();
     if (!normId) return;
@@ -480,6 +661,71 @@
       el.presetSelect.appendChild(opt);
     });
     renderPresetSummary();
+  }
+
+  function activeProviderSeries() {
+    const sid = el.providerSeriesSelect?.value || "";
+    return state.providerSeriesLookup.get(sid) || null;
+  }
+
+  function renderProviderSeriesMeta() {
+    if (!el.providerSeriesMeta) return;
+    const s = activeProviderSeries();
+    if (!s) {
+      el.providerSeriesMeta.textContent = "No provider series selected.";
+      return;
+    }
+    const srcName = s.source_name || s.provider?.toUpperCase() || "Provider";
+    const srcUrl = s.source_url || "";
+    el.providerSeriesMeta.innerHTML = `
+      <strong>${s.title || s.id}</strong> [${String(s.provider || "").toUpperCase()}]
+      <br />${s.description || ""}
+      ${srcUrl ? `<br /><a href="${srcUrl}" target="_blank" rel="noopener noreferrer">${srcName}</a>` : ""}
+    `;
+  }
+
+  function renderProviderSeriesOptions() {
+    if (!el.providerSeriesSelect) return;
+    el.providerSeriesSelect.innerHTML = "";
+    if (!state.providerSeriesCatalog.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No provider catalog found";
+      el.providerSeriesSelect.appendChild(opt);
+      renderProviderSeriesMeta();
+      return;
+    }
+
+    state.providerSeriesCatalog.forEach((s, i) => {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = `[${String(s.provider || "").toUpperCase()}] ${s.title || s.id}`;
+      if (i === 0) opt.selected = true;
+      el.providerSeriesSelect.appendChild(opt);
+    });
+    renderProviderSeriesMeta();
+  }
+
+  function addSelectedProviderSeries() {
+    const s = activeProviderSeries();
+    if (!s) {
+      setStatus(el.providerSeriesStatus, "Select a provider series first.", "error");
+      return;
+    }
+
+    const id = String(s.id || "").trim();
+    const alias = String(s.alias || id).trim();
+    const title = String(s.title || id).trim();
+    const provider = String(s.provider || "").toLowerCase();
+    const meta = s.meta || null;
+
+    if (!id || !provider || !meta) {
+      setStatus(el.providerSeriesStatus, "Provider series is missing required metadata.", "error");
+      return;
+    }
+
+    upsertSeries(id, alias, title, provider, meta);
+    setStatus(el.providerSeriesStatus, `Added ${provider.toUpperCase()}:${id}.`, "ok");
   }
 
   function applyPreset(presetId, replace = true) {
@@ -660,6 +906,21 @@
       state.seriesLookup = new Map();
       if (el.libraryTableBody) el.libraryTableBody.innerHTML = "";
       setStatus(el.libraryStatus, `Series intelligence unavailable: ${err.message}`, "error");
+    }
+
+    try {
+      const providerText = await fetchText("data/research/public_provider_library.json");
+      state.providerSeriesCatalog = JSON.parse(providerText);
+      state.providerSeriesLookup = new Map(
+        state.providerSeriesCatalog.map((s) => [String(s.id || ""), s])
+      );
+      renderProviderSeriesOptions();
+      setStatus(el.providerSeriesStatus, `Loaded ${state.providerSeriesCatalog.length} provider series adapters.`, "ok");
+    } catch (err) {
+      state.providerSeriesCatalog = [];
+      state.providerSeriesLookup = new Map();
+      renderProviderSeriesOptions();
+      setStatus(el.providerSeriesStatus, `Provider adapter catalog unavailable: ${err.message}`, "error");
     }
   }
 
@@ -883,6 +1144,15 @@
           const valueColumn = s.meta?.valueColumn || "value";
           if (!url) throw new Error("Missing CSV URL metadata.");
           const rows = await fetchExternalCsvSeries(url, dateColumn, valueColumn, start, end);
+          fetched.set(s.alias, rows);
+        } else if (s.provider === "bea") {
+          const rows = await fetchBeaSeries(s.meta, start, end, state.beaApiKey);
+          fetched.set(s.alias, rows);
+        } else if (s.provider === "treasury") {
+          const rows = await fetchTreasurySeries(s.meta, start, end);
+          fetched.set(s.alias, rows);
+        } else if (s.provider === "census") {
+          const rows = await fetchCensusSeries(s.meta, start, end, state.censusApiKey);
           fetched.set(s.alias, rows);
         } else {
           throw new Error(`Unsupported provider: ${s.provider}`);
@@ -1554,16 +1824,24 @@
     el.endDate.value = todayISO();
     el.apiKey.value = state.apiKey;
     if (el.blsApiKey) el.blsApiKey.value = state.blsApiKey;
+    if (el.beaApiKey) el.beaApiKey.value = state.beaApiKey;
+    if (el.censusApiKey) el.censusApiKey.value = state.censusApiKey;
     if (el.sqlInput) el.sqlInput.value = "SELECT * FROM fred_data ORDER BY DATE";
 
     el.saveApiKey.addEventListener("click", () => {
       state.apiKey = el.apiKey.value.trim();
       state.blsApiKey = el.blsApiKey?.value.trim() || "";
+      state.beaApiKey = el.beaApiKey?.value.trim() || "";
+      state.censusApiKey = el.censusApiKey?.value.trim() || "";
       localStorage.setItem("fred_api_key", state.apiKey);
       localStorage.setItem("bls_api_key", state.blsApiKey);
+      localStorage.setItem("bea_api_key", state.beaApiKey);
+      localStorage.setItem("census_api_key", state.censusApiKey);
       const bits = [];
       bits.push(state.apiKey ? "FRED key saved" : "FRED key cleared");
       bits.push(state.blsApiKey ? "BLS key saved" : "BLS key cleared");
+      bits.push(state.beaApiKey ? "BEA key saved" : "BEA key cleared");
+      bits.push(state.censusApiKey ? "Census key saved" : "Census key cleared");
       setStatus(el.catalogStatus, `${bits.join(" | ")}.`, "ok");
     });
 
@@ -1575,6 +1853,14 @@
       const alias = el.manualAlias.value.trim();
       if (!id) {
         setStatus(el.fetchStatus, "Enter a series ID.", "error");
+        return;
+      }
+      if (provider === "bea" || provider === "treasury" || provider === "census") {
+        setStatus(
+          el.fetchStatus,
+          "For BEA/Treasury/Census, use Public Data Adapters so endpoint metadata is populated.",
+          "error"
+        );
         return;
       }
       upsertSeries(id, alias || id, "Manual series", provider);
@@ -1605,6 +1891,13 @@
         const replace = Boolean(el.replacePreset?.checked);
         await runPresetFlow(pid, replace);
       });
+    }
+
+    if (el.providerSeriesSelect) {
+      el.providerSeriesSelect.addEventListener("change", renderProviderSeriesMeta);
+    }
+    if (el.addProviderSeries) {
+      el.addProviderSeries.addEventListener("click", addSelectedProviderSeries);
     }
 
     if (el.addExternalCsv) {

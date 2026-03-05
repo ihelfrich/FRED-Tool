@@ -1,0 +1,245 @@
+[
+  {
+    "id": "TREASURY_BILLS_AVG_RATE",
+    "provider": "treasury",
+    "alias": "UST_BILL_RATE",
+    "title": "Treasury Bills Average Interest Rate",
+    "description": "U.S. Treasury average interest rate on Treasury Bills.",
+    "source_name": "U.S. Treasury FiscalData",
+    "source_url": "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/average-interest-rates-on-u-s-treasury-securities",
+    "meta": {
+      "endpoint": "accounting/od/avg_interest_rates",
+      "date_field": "record_date",
+      "value_field": "avg_interest_rate_amt",
+      "filters": {
+        "security_desc": "Treasury Bills"
+      }
+    }
+  },
+  {
+    "id": "TREASURY_NOTES_AVG_RATE",
+    "provider": "treasury",
+    "alias": "UST_NOTE_RATE",
+    "title": "Treasury Notes Average Interest Rate",
+    "description": "U.S. Treasury average interest rate on Treasury Notes.",
+    "source_name": "U.S. Treasury FiscalData",
+    "source_url": "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/average-interest-rates-on-u-s-treasury-securities",
+    "meta": {
+      "endpoint": "accounting/od/avg_interest_rates",
+      "date_field": "record_date",
+      "value_field": "avg_interest_rate_amt",
+      "filters": {
+        "security_desc": "Treasury Notes"
+      }
+    }
+  },
+  {
+    "id": "TREASURY_BONDS_AVG_RATE",
+    "provider": "treasury",
+    "alias": "UST_BOND_RATE",
+    "title": "Treasury Bonds Average Interest Rate",
+    "description": "U.S. Treasury average interest rate on Treasury Bonds.",
+    "source_name": "U.S. Treasury FiscalData",
+    "source_url": "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/average-interest-rates-on-u-s-treasury-securities",
+    "meta": {
+      "endpoint": "accounting/od/avg_interest_rates",
+      "date_field": "record_date",
+      "value_field": "avg_interest_rate_amt",
+      "filters": {
+        "security_desc": "Treasury Bonds"
+      }
+    }
+  },
+  {
+    "id": "TREASURY_TIPS_AVG_RATE",
+    "provider": "treasury",
+    "alias": "UST_TIPS_RATE",
+    "title": "Treasury Inflation-Protected Securities Average Interest Rate",
+    "description": "U.S. Treasury average interest rate on TIPS.",
+    "source_name": "U.S. Treasury FiscalData",
+    "source_url": "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/average-interest-rates-on-u-s-treasury-securities",
+    "meta": {
+      "endpoint": "accounting/od/avg_interest_rates",
+      "date_field": "record_date",
+      "value_field": "avg_interest_rate_amt",
+      "filters": {
+        "security_desc": "Treasury Inflation-Protected Securities (TIPS)"
+      }
+    }
+  },
+  {
+    "id": "TREASURY_TOTAL_PUBLIC_DEBT",
+    "provider": "treasury",
+    "alias": "UST_TOTAL_DEBT",
+    "title": "Total Public Debt Outstanding",
+    "description": "Total public debt outstanding from the Daily Treasury Statement series.",
+    "source_name": "U.S. Treasury FiscalData",
+    "source_url": "https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/debt-to-the-penny",
+    "meta": {
+      "endpoint": "accounting/od/debt_to_penny",
+      "date_field": "record_date",
+      "value_field": "tot_pub_debt_out_amt"
+    }
+  },
+  {
+    "id": "CENSUS_EXPORT_SOYBEANS",
+    "provider": "census",
+    "alias": "CEN_EXP_SOY",
+    "title": "Census Exports: Soybeans",
+    "description": "Monthly U.S. export value for soybeans from Census international trade end-use tables.",
+    "source_name": "U.S. Census Bureau API",
+    "source_url": "https://api.census.gov/data/timeseries/intltrade/exports/enduse",
+    "meta": {
+      "endpoint": "timeseries/intltrade/exports/enduse",
+      "value_field": "ALL_VAL_MO",
+      "time_field": "time",
+      "get_fields": ["ALL_VAL_MO", "E_ENDUSE_SDESC"],
+      "predicates": {
+        "E_ENDUSE": "00100"
+      },
+      "default_time_from": "2010-01"
+    }
+  },
+  {
+    "id": "CENSUS_EXPORT_WHEAT",
+    "provider": "census",
+    "alias": "CEN_EXP_WHEAT",
+    "title": "Census Exports: Wheat",
+    "description": "Monthly U.S. export value for wheat from Census international trade end-use tables.",
+    "source_name": "U.S. Census Bureau API",
+    "source_url": "https://api.census.gov/data/timeseries/intltrade/exports/enduse",
+    "meta": {
+      "endpoint": "timeseries/intltrade/exports/enduse",
+      "value_field": "ALL_VAL_MO",
+      "time_field": "time",
+      "get_fields": ["ALL_VAL_MO", "E_ENDUSE_SDESC"],
+      "predicates": {
+        "E_ENDUSE": "00000"
+      },
+      "default_time_from": "2010-01"
+    }
+  },
+  {
+    "id": "CENSUS_EXPORT_FISH_SHELLFISH",
+    "provider": "census",
+    "alias": "CEN_EXP_FISH",
+    "title": "Census Exports: Fish and Shellfish",
+    "description": "Monthly U.S. export value for fish and shellfish.",
+    "source_name": "U.S. Census Bureau API",
+    "source_url": "https://api.census.gov/data/timeseries/intltrade/exports/enduse",
+    "meta": {
+      "endpoint": "timeseries/intltrade/exports/enduse",
+      "value_field": "ALL_VAL_MO",
+      "time_field": "time",
+      "get_fields": ["ALL_VAL_MO", "E_ENDUSE_SDESC"],
+      "predicates": {
+        "E_ENDUSE": "01000"
+      },
+      "default_time_from": "2010-01"
+    }
+  },
+  {
+    "id": "CENSUS_IMPORT_MEAT_PRODUCTS",
+    "provider": "census",
+    "alias": "CEN_IMP_MEAT",
+    "title": "Census Imports: Meat Products",
+    "description": "Monthly U.S. import value for meat products from Census international trade end-use tables.",
+    "source_name": "U.S. Census Bureau API",
+    "source_url": "https://api.census.gov/data/timeseries/intltrade/imports/enduse",
+    "meta": {
+      "endpoint": "timeseries/intltrade/imports/enduse",
+      "value_field": "GEN_VAL_MO",
+      "time_field": "time",
+      "get_fields": ["GEN_VAL_MO", "I_ENDUSE_SDESC"],
+      "predicates": {
+        "I_ENDUSE": "00100"
+      },
+      "default_time_from": "2010-01"
+    }
+  },
+  {
+    "id": "CENSUS_IMPORT_FISH_SHELLFISH",
+    "provider": "census",
+    "alias": "CEN_IMP_FISH",
+    "title": "Census Imports: Fish and Shellfish",
+    "description": "Monthly U.S. import value for fish and shellfish.",
+    "source_name": "U.S. Census Bureau API",
+    "source_url": "https://api.census.gov/data/timeseries/intltrade/imports/enduse",
+    "meta": {
+      "endpoint": "timeseries/intltrade/imports/enduse",
+      "value_field": "GEN_VAL_MO",
+      "time_field": "time",
+      "get_fields": ["GEN_VAL_MO", "I_ENDUSE_SDESC"],
+      "predicates": {
+        "I_ENDUSE": "01000"
+      },
+      "default_time_from": "2010-01"
+    }
+  },
+  {
+    "id": "BEA_NOMINAL_GDP",
+    "provider": "bea",
+    "alias": "BEA_GDP_NOM",
+    "title": "BEA NIPA: Gross Domestic Product (Nominal)",
+    "description": "NIPA Table 1.1.5, line 1 (nominal GDP, quarterly annualized level).",
+    "source_name": "U.S. Bureau of Economic Analysis API",
+    "source_url": "https://apps.bea.gov/API/docs/index.htm",
+    "meta": {
+      "datasetname": "NIPA",
+      "tablename": "T10105",
+      "linenumber": "1",
+      "frequency": "Q",
+      "year": "ALL",
+      "series_code": "A191RC"
+    }
+  },
+  {
+    "id": "BEA_REAL_GDP",
+    "provider": "bea",
+    "alias": "BEA_GDP_REAL",
+    "title": "BEA NIPA: Gross Domestic Product (Real)",
+    "description": "NIPA Table 1.1.6, line 1 (real GDP, chained dollars, quarterly annualized level).",
+    "source_name": "U.S. Bureau of Economic Analysis API",
+    "source_url": "https://apps.bea.gov/API/docs/index.htm",
+    "meta": {
+      "datasetname": "NIPA",
+      "tablename": "T10106",
+      "linenumber": "1",
+      "frequency": "Q",
+      "year": "ALL",
+      "series_code": "A191RX"
+    }
+  },
+  {
+    "id": "BEA_NOMINAL_PCE",
+    "provider": "bea",
+    "alias": "BEA_PCE_NOM",
+    "title": "BEA NIPA: Personal Consumption Expenditures (Nominal)",
+    "description": "NIPA Table 1.1.5, line 2 (nominal PCE, quarterly annualized level).",
+    "source_name": "U.S. Bureau of Economic Analysis API",
+    "source_url": "https://apps.bea.gov/API/docs/index.htm",
+    "meta": {
+      "datasetname": "NIPA",
+      "tablename": "T10105",
+      "linenumber": "2",
+      "frequency": "Q",
+      "year": "ALL"
+    }
+  },
+  {
+    "id": "BEA_REAL_PCE",
+    "provider": "bea",
+    "alias": "BEA_PCE_REAL",
+    "title": "BEA NIPA: Personal Consumption Expenditures (Real)",
+    "description": "NIPA Table 1.1.6, line 2 (real PCE, quarterly annualized level).",
+    "source_name": "U.S. Bureau of Economic Analysis API",
+    "source_url": "https://apps.bea.gov/API/docs/index.htm",
+    "meta": {
+      "datasetname": "NIPA",
+      "tablename": "T10106",
+      "linenumber": "2",
+      "frequency": "Q",
+      "year": "ALL"
+    }
+  }
+]

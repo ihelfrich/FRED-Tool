@@ -33,6 +33,10 @@
       <input id="apiKey" type="password" placeholder="Required for catalog search" autocomplete="off" />
       <label for="blsApiKey">BLS API Key</label>
       <input id="blsApiKey" type="password" placeholder="Optional for higher BLS limits" autocomplete="off" />
+      <label for="beaApiKey">BEA API Key</label>
+      <input id="beaApiKey" type="password" placeholder="Required for BEA series" autocomplete="off" />
+      <label for="censusApiKey">Census API Key</label>
+      <input id="censusApiKey" type="password" placeholder="Optional for Census higher limits" autocomplete="off" />
       <button id="saveApiKey" class="btn btn-secondary">Save Key</button>
       <span class="build-pill" title="Deployed from GitHub Actions">Build: GitHub Actions</span>
     </div>
@@ -92,6 +96,9 @@
           <select id="manualProvider" aria-label="Data provider">
             <option value="fred">FRED</option>
             <option value="bls">BLS</option>
+            <option value="bea">BEA (advanced id)</option>
+            <option value="treasury">Treasury (advanced id)</option>
+            <option value="census">Census (advanced id)</option>
           </select>
           <input id="manualSeriesId" type="text" placeholder="Series ID (e.g., GS10)" aria-label="Manual series ID" />
           <input id="manualAlias" type="text" placeholder="Alias (optional, e.g., long_rate)" aria-label="Manual alias" />
@@ -117,6 +124,19 @@
         </div>
         <div id="presetSummary" class="help"></div>
         <div id="presetStatus" class="status" role="status" aria-live="polite"></div>
+      </article>
+
+      <article class="card">
+        <h3>Public Data Adapters</h3>
+        <p class="help">First-class connectors for BEA, Treasury FiscalData, and Census timeseries endpoints.</p>
+        <div class="row">
+          <select id="providerSeriesSelect" aria-label="Public provider series"></select>
+        </div>
+        <div class="row">
+          <button id="addProviderSeries" class="btn btn-primary">Add Provider Series</button>
+        </div>
+        <div id="providerSeriesMeta" class="help"></div>
+        <div id="providerSeriesStatus" class="status" role="status" aria-live="polite"></div>
       </article>
 
       <article class="card">

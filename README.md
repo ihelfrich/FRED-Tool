@@ -6,6 +6,9 @@ Modern macro data studio running on GitHub Pages (deployed via GitHub Actions) w
 - FRED catalog search
 - FRED API v2 bulk-release pulls with cursor pagination
 - BLS integration (live API and static snapshot fallback)
+- BEA adapter (NIPA table pulls via BEA API)
+- U.S. Treasury FiscalData adapter (interest-rate and debt series)
+- Census timeseries adapter (trade series via Census API)
 - External CSV integration for other public data sources
 - 25 Fed-style report/scenario presets
 - Top-100 series intelligence layer (span, themes, connected datasets)
@@ -28,6 +31,20 @@ Modern macro data studio running on GitHub Pages (deployed via GitHub Actions) w
 ### BLS
 - Live pulls via BLS Public API v2 (`timeseries/data`)
 - Optional BLS API key for larger limits
+
+### BEA
+- Live pulls via BEA API (`apps.bea.gov/api/data`)
+- Supports preset NIPA table/line adapters from `data/research/public_provider_library.json`
+- Requires BEA API key in UI
+
+### U.S. Treasury FiscalData
+- Live pulls via FiscalData API (`api.fiscaldata.treasury.gov`)
+- Supports preset series with endpoint/date/value/filter metadata
+
+### Census
+- Live pulls via Census API timeseries endpoints
+- Supports preset Census trade series adapters
+- Census API key is optional but supported in UI
 
 ### Snapshot Backend (GitHub Actions)
 The deploy workflow can prebuild provider snapshots and publish them with the static site under `data/snapshots/`:
@@ -122,6 +139,12 @@ Get key:
 
 ### BLS API key (optional)
 Improves BLS request limits.
+
+### BEA API key
+Required for BEA adapter pulls.
+
+### Census API key (optional)
+Optional for higher Census API limits.
 
 ## GitHub Actions Deployment
 

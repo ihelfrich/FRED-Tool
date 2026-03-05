@@ -102,14 +102,14 @@ body {
 
 .topbar-actions {
   display: grid;
-  grid-template-columns: auto minmax(150px, 1fr) auto minmax(150px, 1fr) auto;
+  grid-template-columns: auto minmax(150px, 1fr) auto minmax(150px, 1fr);
   align-items: center;
   gap: 0.42rem;
   background: rgba(255, 255, 255, 0.83);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.55rem 0.62rem;
-  min-width: min(420px, 95vw);
+  min-width: min(680px, 95vw);
 }
 
 .topbar-actions label {
@@ -132,7 +132,12 @@ body {
 }
 
 #manualProvider {
-  max-width: 120px;
+  max-width: 220px;
+}
+
+#saveApiKey {
+  grid-column: 1 / -1;
+  justify-self: start;
 }
 
 .stat-strip {
