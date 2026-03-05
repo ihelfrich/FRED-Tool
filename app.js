@@ -632,11 +632,15 @@
     const srcUrl = preset.source?.url || "";
     const seriesCount = Array.isArray(preset.series) ? preset.series.length : 0;
     const formulaCount = Array.isArray(preset.formulas) ? preset.formulas.length : 0;
+    const reqKeys = Array.isArray(preset.required_keys) && preset.required_keys.length
+      ? preset.required_keys.join(", ")
+      : "";
 
     el.presetSummary.innerHTML = `
       <strong>${preset.name}</strong> | ${preset.theme || "General"} | ${seriesCount} series | ${formulaCount} formulas
       <br />
       ${preset.description || ""}
+      ${reqKeys ? `<br />keys: ${reqKeys}` : ""}
       ${srcUrl ? `<br /><a href="${srcUrl}" target="_blank" rel="noopener noreferrer">${srcName}</a>` : ""}
     `;
   }
@@ -745,7 +749,16 @@
       const provider = (s.provider || "fred").toLowerCase();
       const id = String(s.id || "").trim();
       if (!id) return;
-      upsertSeries(id, s.alias || id, s.title || "", provider, s.meta || null);
+      let meta = s.meta || null;
+      let title = s.title || "";
+      if (!meta && (provider === "bea" || provider === "treasury" || provider === "census")) {
+        const fromCatalog = state.providerSeriesLookup.get(id);
+        if (fromCatalog) {
+          meta = fromCatalog.meta || null;
+          if (!title) title = fromCatalog.title || "";
+        }
+      }
+      upsertSeries(id, s.alias || id, title, provider, meta);
     });
 
     if (preset.default_date_start) el.startDate.value = preset.default_date_start;

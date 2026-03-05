@@ -65,6 +65,7 @@ The frontend auto-detects these snapshots and uses them as fast/static fallback.
 - Labor, JOLTS, and wage pressure
 - Banking, balance sheet, money, credit, and financial stability
 - Housing, trade, and industrial activity
+- Cross-source templates using BEA/Treasury/Census adapters
 
 Each preset can:
 - Load a predefined series basket

@@ -11,17 +11,47 @@
     "default_chart_type": "line",
     "default_date_start": "2000-01-01",
     "series": [
-      { "provider": "fred", "id": "FEDFUNDS", "alias": "FEDFUNDS", "title": "Federal Funds Effective Rate" },
-      { "provider": "fred", "id": "SOFR", "alias": "SOFR", "title": "Secured Overnight Financing Rate" },
-      { "provider": "fred", "id": "DFF", "alias": "DFF", "title": "Effective Federal Funds Rate (Daily)" },
-      { "provider": "fred", "id": "DGS3MO", "alias": "DGS3MO", "title": "3-Month Treasury Yield" },
-      { "provider": "fred", "id": "TB3MS", "alias": "TB3MS", "title": "3-Month Treasury Bill" }
+      {
+        "provider": "fred",
+        "id": "FEDFUNDS",
+        "alias": "FEDFUNDS",
+        "title": "Federal Funds Effective Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "SOFR",
+        "alias": "SOFR",
+        "title": "Secured Overnight Financing Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "DFF",
+        "alias": "DFF",
+        "title": "Effective Federal Funds Rate (Daily)"
+      },
+      {
+        "provider": "fred",
+        "id": "DGS3MO",
+        "alias": "DGS3MO",
+        "title": "3-Month Treasury Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "TB3MS",
+        "alias": "TB3MS",
+        "title": "3-Month Treasury Bill"
+      }
     ],
     "formulas": [
       "SOFR_FF_GAP = SOFR - FEDFUNDS",
       "TBILL_FF_GAP = TB3MS - FEDFUNDS"
     ],
-    "default_plot_vars": ["FEDFUNDS", "SOFR", "TB3MS", "SOFR_FF_GAP"]
+    "default_plot_vars": [
+      "FEDFUNDS",
+      "SOFR",
+      "TB3MS",
+      "SOFR_FF_GAP"
+    ]
   },
   {
     "id": "yield_curve_recession",
@@ -35,17 +65,47 @@
     "default_chart_type": "yield_dashboard",
     "default_date_start": "1985-01-01",
     "series": [
-      { "provider": "fred", "id": "GS10", "alias": "GS10", "title": "10-Year Treasury Constant Maturity" },
-      { "provider": "fred", "id": "TB3MS", "alias": "TB3MS", "title": "3-Month Treasury Bill" },
-      { "provider": "fred", "id": "T10Y3M", "alias": "T10Y3M", "title": "10Y - 3M Treasury Spread" },
-      { "provider": "fred", "id": "T10Y2Y", "alias": "T10Y2Y", "title": "10Y - 2Y Treasury Spread" },
-      { "provider": "fred", "id": "USREC", "alias": "USREC", "title": "NBER Recession Indicator" }
+      {
+        "provider": "fred",
+        "id": "GS10",
+        "alias": "GS10",
+        "title": "10-Year Treasury Constant Maturity"
+      },
+      {
+        "provider": "fred",
+        "id": "TB3MS",
+        "alias": "TB3MS",
+        "title": "3-Month Treasury Bill"
+      },
+      {
+        "provider": "fred",
+        "id": "T10Y3M",
+        "alias": "T10Y3M",
+        "title": "10Y - 3M Treasury Spread"
+      },
+      {
+        "provider": "fred",
+        "id": "T10Y2Y",
+        "alias": "T10Y2Y",
+        "title": "10Y - 2Y Treasury Spread"
+      },
+      {
+        "provider": "fred",
+        "id": "USREC",
+        "alias": "USREC",
+        "title": "NBER Recession Indicator"
+      }
     ],
     "formulas": [
       "YC_SPREAD = GS10 - TB3MS",
       "YC_INVERTED = YC_SPREAD < 0"
     ],
-    "default_plot_vars": ["GS10", "TB3MS", "YC_SPREAD", "USREC"]
+    "default_plot_vars": [
+      "GS10",
+      "TB3MS",
+      "YC_SPREAD",
+      "USREC"
+    ]
   },
   {
     "id": "inflation_headline_core",
@@ -59,17 +119,47 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "CPIAUCSL", "alias": "CPIAUCSL", "title": "CPI: All Items" },
-      { "provider": "fred", "id": "CPILFESL", "alias": "CPILFESL", "title": "Core CPI" },
-      { "provider": "fred", "id": "PCEPI", "alias": "PCEPI", "title": "PCE Price Index" },
-      { "provider": "fred", "id": "PCEPILFE", "alias": "PCEPILFE", "title": "Core PCE Price Index" },
-      { "provider": "fred", "id": "PPIACO", "alias": "PPIACO", "title": "PPI: All Commodities" }
+      {
+        "provider": "fred",
+        "id": "CPIAUCSL",
+        "alias": "CPIAUCSL",
+        "title": "CPI: All Items"
+      },
+      {
+        "provider": "fred",
+        "id": "CPILFESL",
+        "alias": "CPILFESL",
+        "title": "Core CPI"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPI",
+        "alias": "PCEPI",
+        "title": "PCE Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPILFE",
+        "alias": "PCEPILFE",
+        "title": "Core PCE Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "PPIACO",
+        "alias": "PPIACO",
+        "title": "PPI: All Commodities"
+      }
     ],
     "formulas": [
       "CORE_CPI_MINUS_CPI = CPILFESL - CPIAUCSL",
       "CORE_PCE_MINUS_PCE = PCEPILFE - PCEPI"
     ],
-    "default_plot_vars": ["CPIAUCSL", "CPILFESL", "PCEPI", "PCEPILFE"]
+    "default_plot_vars": [
+      "CPIAUCSL",
+      "CPILFESL",
+      "PCEPI",
+      "PCEPILFE"
+    ]
   },
   {
     "id": "inflation_expectations",
@@ -83,16 +173,46 @@
     "default_chart_type": "line",
     "default_date_start": "2003-01-01",
     "series": [
-      { "provider": "fred", "id": "T5YIE", "alias": "T5YIE", "title": "5-Year Breakeven Inflation" },
-      { "provider": "fred", "id": "T10YIE", "alias": "T10YIE", "title": "10-Year Breakeven Inflation" },
-      { "provider": "fred", "id": "T5YIFR", "alias": "T5YIFR", "title": "5-Year, 5-Year Forward Inflation Expectation Rate" },
-      { "provider": "fred", "id": "MICH", "alias": "MICH", "title": "University of Michigan: Inflation Expectations" },
-      { "provider": "fred", "id": "UMCSENT", "alias": "UMCSENT", "title": "University of Michigan: Consumer Sentiment" }
+      {
+        "provider": "fred",
+        "id": "T5YIE",
+        "alias": "T5YIE",
+        "title": "5-Year Breakeven Inflation"
+      },
+      {
+        "provider": "fred",
+        "id": "T10YIE",
+        "alias": "T10YIE",
+        "title": "10-Year Breakeven Inflation"
+      },
+      {
+        "provider": "fred",
+        "id": "T5YIFR",
+        "alias": "T5YIFR",
+        "title": "5-Year, 5-Year Forward Inflation Expectation Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "MICH",
+        "alias": "MICH",
+        "title": "University of Michigan: Inflation Expectations"
+      },
+      {
+        "provider": "fred",
+        "id": "UMCSENT",
+        "alias": "UMCSENT",
+        "title": "University of Michigan: Consumer Sentiment"
+      }
     ],
     "formulas": [
       "BEI_10_5_GAP = T10YIE - T5YIE"
     ],
-    "default_plot_vars": ["T5YIE", "T10YIE", "T5YIFR", "MICH"]
+    "default_plot_vars": [
+      "T5YIE",
+      "T10YIE",
+      "T5YIFR",
+      "MICH"
+    ]
   },
   {
     "id": "labor_market_slack",
@@ -106,16 +226,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "Unemployment Rate" },
-      { "provider": "fred", "id": "U6RATE", "alias": "U6RATE", "title": "U-6 Unemployment Rate" },
-      { "provider": "fred", "id": "PAYEMS", "alias": "PAYEMS", "title": "Total Nonfarm Payrolls" },
-      { "provider": "fred", "id": "CIVPART", "alias": "CIVPART", "title": "Labor Force Participation Rate" },
-      { "provider": "fred", "id": "CES0500000003", "alias": "AHE", "title": "Average Hourly Earnings" }
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "U6RATE",
+        "alias": "U6RATE",
+        "title": "U-6 Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "PAYEMS",
+        "alias": "PAYEMS",
+        "title": "Total Nonfarm Payrolls"
+      },
+      {
+        "provider": "fred",
+        "id": "CIVPART",
+        "alias": "CIVPART",
+        "title": "Labor Force Participation Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "CES0500000003",
+        "alias": "AHE",
+        "title": "Average Hourly Earnings"
+      }
     ],
     "formulas": [
       "UNDEREMP_GAP = U6RATE - UNRATE"
     ],
-    "default_plot_vars": ["UNRATE", "U6RATE", "CIVPART", "AHE"]
+    "default_plot_vars": [
+      "UNRATE",
+      "U6RATE",
+      "CIVPART",
+      "AHE"
+    ]
   },
   {
     "id": "labor_flows_jolts",
@@ -129,16 +279,46 @@
     "default_chart_type": "line",
     "default_date_start": "2001-01-01",
     "series": [
-      { "provider": "fred", "id": "JTSJOL", "alias": "JTSJOL", "title": "Job Openings" },
-      { "provider": "fred", "id": "JTSHIR", "alias": "JTSHIR", "title": "Hires" },
-      { "provider": "fred", "id": "JTSQUR", "alias": "JTSQUR", "title": "Quits" },
-      { "provider": "fred", "id": "JTSLDL", "alias": "JTSLDL", "title": "Layoffs and Discharges" },
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "Unemployment Rate" }
+      {
+        "provider": "fred",
+        "id": "JTSJOL",
+        "alias": "JTSJOL",
+        "title": "Job Openings"
+      },
+      {
+        "provider": "fred",
+        "id": "JTSHIR",
+        "alias": "JTSHIR",
+        "title": "Hires"
+      },
+      {
+        "provider": "fred",
+        "id": "JTSQUR",
+        "alias": "JTSQUR",
+        "title": "Quits"
+      },
+      {
+        "provider": "fred",
+        "id": "JTSLDL",
+        "alias": "JTSLDL",
+        "title": "Layoffs and Discharges"
+      },
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "Unemployment Rate"
+      }
     ],
     "formulas": [
       "QUITS_MINUS_LAYOFFS = JTSQUR - JTSLDL"
     ],
-    "default_plot_vars": ["JTSJOL", "JTSHIR", "JTSQUR", "JTSLDL"]
+    "default_plot_vars": [
+      "JTSJOL",
+      "JTSHIR",
+      "JTSQUR",
+      "JTSLDL"
+    ]
   },
   {
     "id": "growth_output_capacity",
@@ -152,16 +332,46 @@
     "default_chart_type": "line",
     "default_date_start": "1980-01-01",
     "series": [
-      { "provider": "fred", "id": "GDPC1", "alias": "GDPC1", "title": "Real GDP" },
-      { "provider": "fred", "id": "GDP", "alias": "GDP", "title": "Nominal GDP" },
-      { "provider": "fred", "id": "INDPRO", "alias": "INDPRO", "title": "Industrial Production Index" },
-      { "provider": "fred", "id": "CUMFN", "alias": "CUMFN", "title": "Capacity Utilization" },
-      { "provider": "fred", "id": "TCU", "alias": "TCU", "title": "Total Industry Capacity Utilization" }
+      {
+        "provider": "fred",
+        "id": "GDPC1",
+        "alias": "GDPC1",
+        "title": "Real GDP"
+      },
+      {
+        "provider": "fred",
+        "id": "GDP",
+        "alias": "GDP",
+        "title": "Nominal GDP"
+      },
+      {
+        "provider": "fred",
+        "id": "INDPRO",
+        "alias": "INDPRO",
+        "title": "Industrial Production Index"
+      },
+      {
+        "provider": "fred",
+        "id": "CUMFN",
+        "alias": "CUMFN",
+        "title": "Capacity Utilization"
+      },
+      {
+        "provider": "fred",
+        "id": "TCU",
+        "alias": "TCU",
+        "title": "Total Industry Capacity Utilization"
+      }
     ],
     "formulas": [
       "REAL_NOMINAL_GAP = GDPC1 - GDP"
     ],
-    "default_plot_vars": ["GDPC1", "INDPRO", "CUMFN", "TCU"]
+    "default_plot_vars": [
+      "GDPC1",
+      "INDPRO",
+      "CUMFN",
+      "TCU"
+    ]
   },
   {
     "id": "consumer_demand_income",
@@ -175,16 +385,46 @@
     "default_chart_type": "line",
     "default_date_start": "1992-01-01",
     "series": [
-      { "provider": "fred", "id": "PCEC96", "alias": "PCEC96", "title": "Real Personal Consumption Expenditures" },
-      { "provider": "fred", "id": "DSPIC96", "alias": "DSPIC96", "title": "Real Disposable Personal Income" },
-      { "provider": "fred", "id": "PSAVERT", "alias": "PSAVERT", "title": "Personal Saving Rate" },
-      { "provider": "fred", "id": "RSAFS", "alias": "RSAFS", "title": "Retail Sales" },
-      { "provider": "fred", "id": "RRSFS", "alias": "RRSFS", "title": "Real Retail Sales" }
+      {
+        "provider": "fred",
+        "id": "PCEC96",
+        "alias": "PCEC96",
+        "title": "Real Personal Consumption Expenditures"
+      },
+      {
+        "provider": "fred",
+        "id": "DSPIC96",
+        "alias": "DSPIC96",
+        "title": "Real Disposable Personal Income"
+      },
+      {
+        "provider": "fred",
+        "id": "PSAVERT",
+        "alias": "PSAVERT",
+        "title": "Personal Saving Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "RSAFS",
+        "alias": "RSAFS",
+        "title": "Retail Sales"
+      },
+      {
+        "provider": "fred",
+        "id": "RRSFS",
+        "alias": "RRSFS",
+        "title": "Real Retail Sales"
+      }
     ],
     "formulas": [
       "REAL_MINUS_NOMINAL_RETAIL = RRSFS - RSAFS"
     ],
-    "default_plot_vars": ["PCEC96", "DSPIC96", "PSAVERT", "RRSFS"]
+    "default_plot_vars": [
+      "PCEC96",
+      "DSPIC96",
+      "PSAVERT",
+      "RRSFS"
+    ]
   },
   {
     "id": "housing_activity_finance",
@@ -198,16 +438,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "HOUST", "alias": "HOUST", "title": "Housing Starts" },
-      { "provider": "fred", "id": "PERMIT", "alias": "PERMIT", "title": "Building Permits" },
-      { "provider": "fred", "id": "CSUSHPINSA", "alias": "CSUSHPINSA", "title": "Case-Shiller Home Price Index" },
-      { "provider": "fred", "id": "MORTGAGE30US", "alias": "MORTGAGE30US", "title": "30-Year Mortgage Rate" },
-      { "provider": "fred", "id": "MSPUS", "alias": "MSPUS", "title": "Median Sales Price of Houses Sold" }
+      {
+        "provider": "fred",
+        "id": "HOUST",
+        "alias": "HOUST",
+        "title": "Housing Starts"
+      },
+      {
+        "provider": "fred",
+        "id": "PERMIT",
+        "alias": "PERMIT",
+        "title": "Building Permits"
+      },
+      {
+        "provider": "fred",
+        "id": "CSUSHPINSA",
+        "alias": "CSUSHPINSA",
+        "title": "Case-Shiller Home Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "MORTGAGE30US",
+        "alias": "MORTGAGE30US",
+        "title": "30-Year Mortgage Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "MSPUS",
+        "alias": "MSPUS",
+        "title": "Median Sales Price of Houses Sold"
+      }
     ],
     "formulas": [
       "STARTS_PERMITS_GAP = HOUST - PERMIT"
     ],
-    "default_plot_vars": ["HOUST", "PERMIT", "MORTGAGE30US", "CSUSHPINSA"]
+    "default_plot_vars": [
+      "HOUST",
+      "PERMIT",
+      "MORTGAGE30US",
+      "CSUSHPINSA"
+    ]
   },
   {
     "id": "bank_credit_liquidity",
@@ -221,16 +491,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "TOTBKCR", "alias": "TOTBKCR", "title": "Total Bank Credit" },
-      { "provider": "fred", "id": "BUSLOANS", "alias": "BUSLOANS", "title": "Commercial and Industrial Loans" },
-      { "provider": "fred", "id": "REALLN", "alias": "REALLN", "title": "Real Estate Loans" },
-      { "provider": "fred", "id": "WRESBAL", "alias": "WRESBAL", "title": "Reserve Balances" },
-      { "provider": "fred", "id": "WALCL", "alias": "WALCL", "title": "Federal Reserve Total Assets" }
+      {
+        "provider": "fred",
+        "id": "TOTBKCR",
+        "alias": "TOTBKCR",
+        "title": "Total Bank Credit"
+      },
+      {
+        "provider": "fred",
+        "id": "BUSLOANS",
+        "alias": "BUSLOANS",
+        "title": "Commercial and Industrial Loans"
+      },
+      {
+        "provider": "fred",
+        "id": "REALLN",
+        "alias": "REALLN",
+        "title": "Real Estate Loans"
+      },
+      {
+        "provider": "fred",
+        "id": "WRESBAL",
+        "alias": "WRESBAL",
+        "title": "Reserve Balances"
+      },
+      {
+        "provider": "fred",
+        "id": "WALCL",
+        "alias": "WALCL",
+        "title": "Federal Reserve Total Assets"
+      }
     ],
     "formulas": [
       "C_I_TO_TOTAL = BUSLOANS / TOTBKCR"
     ],
-    "default_plot_vars": ["TOTBKCR", "BUSLOANS", "REALLN", "WRESBAL"]
+    "default_plot_vars": [
+      "TOTBKCR",
+      "BUSLOANS",
+      "REALLN",
+      "WRESBAL"
+    ]
   },
   {
     "id": "fed_balance_sheet_reserves",
@@ -244,16 +544,46 @@
     "default_chart_type": "line",
     "default_date_start": "2003-01-01",
     "series": [
-      { "provider": "fred", "id": "WALCL", "alias": "WALCL", "title": "Federal Reserve Total Assets" },
-      { "provider": "fred", "id": "WRESBAL", "alias": "WRESBAL", "title": "Reserve Balances" },
-      { "provider": "fred", "id": "RRPONTSYD", "alias": "RRPONTSYD", "title": "Overnight Reverse Repo" },
-      { "provider": "fred", "id": "RRPONTTLD", "alias": "RRPONTTLD", "title": "Overnight Reverse Repo - Total" },
-      { "provider": "fred", "id": "WTREGEN", "alias": "WTREGEN", "title": "Treasury General Account" }
+      {
+        "provider": "fred",
+        "id": "WALCL",
+        "alias": "WALCL",
+        "title": "Federal Reserve Total Assets"
+      },
+      {
+        "provider": "fred",
+        "id": "WRESBAL",
+        "alias": "WRESBAL",
+        "title": "Reserve Balances"
+      },
+      {
+        "provider": "fred",
+        "id": "RRPONTSYD",
+        "alias": "RRPONTSYD",
+        "title": "Overnight Reverse Repo"
+      },
+      {
+        "provider": "fred",
+        "id": "RRPONTTLD",
+        "alias": "RRPONTTLD",
+        "title": "Overnight Reverse Repo - Total"
+      },
+      {
+        "provider": "fred",
+        "id": "WTREGEN",
+        "alias": "WTREGEN",
+        "title": "Treasury General Account"
+      }
     ],
     "formulas": [
       "BALANCE_SHEET_NET_RRP = WALCL - RRPONTTLD"
     ],
-    "default_plot_vars": ["WALCL", "WRESBAL", "RRPONTTLD", "WTREGEN"]
+    "default_plot_vars": [
+      "WALCL",
+      "WRESBAL",
+      "RRPONTTLD",
+      "WTREGEN"
+    ]
   },
   {
     "id": "money_stock_velocity",
@@ -267,16 +597,46 @@
     "default_chart_type": "line",
     "default_date_start": "1960-01-01",
     "series": [
-      { "provider": "fred", "id": "M1SL", "alias": "M1SL", "title": "M1 Money Stock" },
-      { "provider": "fred", "id": "M2SL", "alias": "M2SL", "title": "M2 Money Stock" },
-      { "provider": "fred", "id": "M2V", "alias": "M2V", "title": "Velocity of M2" },
-      { "provider": "fred", "id": "FEDFUNDS", "alias": "FEDFUNDS", "title": "Federal Funds Effective Rate" },
-      { "provider": "fred", "id": "SOFR", "alias": "SOFR", "title": "SOFR" }
+      {
+        "provider": "fred",
+        "id": "M1SL",
+        "alias": "M1SL",
+        "title": "M1 Money Stock"
+      },
+      {
+        "provider": "fred",
+        "id": "M2SL",
+        "alias": "M2SL",
+        "title": "M2 Money Stock"
+      },
+      {
+        "provider": "fred",
+        "id": "M2V",
+        "alias": "M2V",
+        "title": "Velocity of M2"
+      },
+      {
+        "provider": "fred",
+        "id": "FEDFUNDS",
+        "alias": "FEDFUNDS",
+        "title": "Federal Funds Effective Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "SOFR",
+        "alias": "SOFR",
+        "title": "SOFR"
+      }
     ],
     "formulas": [
       "M2_TO_M1 = M2SL / M1SL"
     ],
-    "default_plot_vars": ["M1SL", "M2SL", "M2V", "M2_TO_M1"]
+    "default_plot_vars": [
+      "M1SL",
+      "M2SL",
+      "M2V",
+      "M2_TO_M1"
+    ]
   },
   {
     "id": "financial_conditions_risk",
@@ -290,16 +650,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "NFCI", "alias": "NFCI", "title": "Chicago Fed National Financial Conditions Index" },
-      { "provider": "fred", "id": "VIXCLS", "alias": "VIXCLS", "title": "CBOE VIX" },
-      { "provider": "fred", "id": "TEDRATE", "alias": "TEDRATE", "title": "TED Spread" },
-      { "provider": "fred", "id": "BAMLC0A4CBBB", "alias": "BBB_YLD", "title": "ICE BofA BBB Effective Yield" },
-      { "provider": "fred", "id": "BAMLH0A0HYM2", "alias": "HY_OAS", "title": "ICE BofA High Yield OAS" }
+      {
+        "provider": "fred",
+        "id": "NFCI",
+        "alias": "NFCI",
+        "title": "Chicago Fed National Financial Conditions Index"
+      },
+      {
+        "provider": "fred",
+        "id": "VIXCLS",
+        "alias": "VIXCLS",
+        "title": "CBOE VIX"
+      },
+      {
+        "provider": "fred",
+        "id": "TEDRATE",
+        "alias": "TEDRATE",
+        "title": "TED Spread"
+      },
+      {
+        "provider": "fred",
+        "id": "BAMLC0A4CBBB",
+        "alias": "BBB_YLD",
+        "title": "ICE BofA BBB Effective Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "BAMLH0A0HYM2",
+        "alias": "HY_OAS",
+        "title": "ICE BofA High Yield OAS"
+      }
     ],
     "formulas": [
       "RISK_MIX = VIXCLS + HY_OAS"
     ],
-    "default_plot_vars": ["NFCI", "VIXCLS", "TEDRATE", "HY_OAS"]
+    "default_plot_vars": [
+      "NFCI",
+      "VIXCLS",
+      "TEDRATE",
+      "HY_OAS"
+    ]
   },
   {
     "id": "credit_spreads_quality",
@@ -313,17 +703,47 @@
     "default_chart_type": "line",
     "default_date_start": "1997-01-01",
     "series": [
-      { "provider": "fred", "id": "BAMLC0A1CAAAEY", "alias": "AAA_YLD", "title": "AAA Corporate Effective Yield" },
-      { "provider": "fred", "id": "BAMLC0A4CBBB", "alias": "BBB_YLD", "title": "BBB Corporate Effective Yield" },
-      { "provider": "fred", "id": "BAMLH0A3HYCEY", "alias": "CCC_YLD", "title": "CCC and Lower Effective Yield" },
-      { "provider": "fred", "id": "BAA10Y", "alias": "BAA10Y", "title": "BAA - 10Y Treasury Spread" },
-      { "provider": "fred", "id": "AAA10Y", "alias": "AAA10Y", "title": "AAA - 10Y Treasury Spread" }
+      {
+        "provider": "fred",
+        "id": "BAMLC0A1CAAAEY",
+        "alias": "AAA_YLD",
+        "title": "AAA Corporate Effective Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "BAMLC0A4CBBB",
+        "alias": "BBB_YLD",
+        "title": "BBB Corporate Effective Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "BAMLH0A3HYCEY",
+        "alias": "CCC_YLD",
+        "title": "CCC and Lower Effective Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "BAA10Y",
+        "alias": "BAA10Y",
+        "title": "BAA - 10Y Treasury Spread"
+      },
+      {
+        "provider": "fred",
+        "id": "AAA10Y",
+        "alias": "AAA10Y",
+        "title": "AAA - 10Y Treasury Spread"
+      }
     ],
     "formulas": [
       "JUNK_MINUS_AAA = CCC_YLD - AAA_YLD",
       "BBB_MINUS_AAA = BBB_YLD - AAA_YLD"
     ],
-    "default_plot_vars": ["AAA_YLD", "BBB_YLD", "CCC_YLD", "JUNK_MINUS_AAA"]
+    "default_plot_vars": [
+      "AAA_YLD",
+      "BBB_YLD",
+      "CCC_YLD",
+      "JUNK_MINUS_AAA"
+    ]
   },
   {
     "id": "treasury_curve_full",
@@ -337,17 +757,48 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "DGS1", "alias": "DGS1", "title": "1-Year Treasury Yield" },
-      { "provider": "fred", "id": "DGS2", "alias": "DGS2", "title": "2-Year Treasury Yield" },
-      { "provider": "fred", "id": "DGS5", "alias": "DGS5", "title": "5-Year Treasury Yield" },
-      { "provider": "fred", "id": "DGS10", "alias": "DGS10", "title": "10-Year Treasury Yield" },
-      { "provider": "fred", "id": "DGS30", "alias": "DGS30", "title": "30-Year Treasury Yield" }
+      {
+        "provider": "fred",
+        "id": "DGS1",
+        "alias": "DGS1",
+        "title": "1-Year Treasury Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "DGS2",
+        "alias": "DGS2",
+        "title": "2-Year Treasury Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "DGS5",
+        "alias": "DGS5",
+        "title": "5-Year Treasury Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "DGS10",
+        "alias": "DGS10",
+        "title": "10-Year Treasury Yield"
+      },
+      {
+        "provider": "fred",
+        "id": "DGS30",
+        "alias": "DGS30",
+        "title": "30-Year Treasury Yield"
+      }
     ],
     "formulas": [
       "CURVE_10_2 = DGS10 - DGS2",
       "CURVE_30_2 = DGS30 - DGS2"
     ],
-    "default_plot_vars": ["DGS1", "DGS2", "DGS10", "DGS30", "CURVE_10_2"]
+    "default_plot_vars": [
+      "DGS1",
+      "DGS2",
+      "DGS10",
+      "DGS30",
+      "CURVE_10_2"
+    ]
   },
   {
     "id": "dollar_fx_external",
@@ -361,16 +812,46 @@
     "default_chart_type": "line",
     "default_date_start": "1995-01-01",
     "series": [
-      { "provider": "fred", "id": "DTWEXBGS", "alias": "DTWEXBGS", "title": "Trade Weighted U.S. Dollar Index" },
-      { "provider": "fred", "id": "DEXUSEU", "alias": "DEXUSEU", "title": "USD / Euro" },
-      { "provider": "fred", "id": "DEXJPUS", "alias": "DEXJPUS", "title": "JPY / USD" },
-      { "provider": "fred", "id": "DEXCHUS", "alias": "DEXCHUS", "title": "CNY / USD" },
-      { "provider": "fred", "id": "DEXUSUK", "alias": "DEXUSUK", "title": "USD / GBP" }
+      {
+        "provider": "fred",
+        "id": "DTWEXBGS",
+        "alias": "DTWEXBGS",
+        "title": "Trade Weighted U.S. Dollar Index"
+      },
+      {
+        "provider": "fred",
+        "id": "DEXUSEU",
+        "alias": "DEXUSEU",
+        "title": "USD / Euro"
+      },
+      {
+        "provider": "fred",
+        "id": "DEXJPUS",
+        "alias": "DEXJPUS",
+        "title": "JPY / USD"
+      },
+      {
+        "provider": "fred",
+        "id": "DEXCHUS",
+        "alias": "DEXCHUS",
+        "title": "CNY / USD"
+      },
+      {
+        "provider": "fred",
+        "id": "DEXUSUK",
+        "alias": "DEXUSUK",
+        "title": "USD / GBP"
+      }
     ],
     "formulas": [
       "USD_EUR_GBP = DEXUSEU + DEXUSUK"
     ],
-    "default_plot_vars": ["DTWEXBGS", "DEXUSEU", "DEXJPUS", "DEXCHUS"]
+    "default_plot_vars": [
+      "DTWEXBGS",
+      "DEXUSEU",
+      "DEXJPUS",
+      "DEXCHUS"
+    ]
   },
   {
     "id": "trade_external_balance",
@@ -384,16 +865,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "BOPGSTB", "alias": "BOPGSTB", "title": "Trade Balance: Goods and Services" },
-      { "provider": "fred", "id": "EXPGSC1", "alias": "EXPGSC1", "title": "Real Exports of Goods and Services" },
-      { "provider": "fred", "id": "IMPGSC1", "alias": "IMPGSC1", "title": "Real Imports of Goods and Services" },
-      { "provider": "fred", "id": "NETEXP", "alias": "NETEXP", "title": "Real Net Exports" },
-      { "provider": "fred", "id": "BOPBCA", "alias": "BOPBCA", "title": "Current Account Balance" }
+      {
+        "provider": "fred",
+        "id": "BOPGSTB",
+        "alias": "BOPGSTB",
+        "title": "Trade Balance: Goods and Services"
+      },
+      {
+        "provider": "fred",
+        "id": "EXPGSC1",
+        "alias": "EXPGSC1",
+        "title": "Real Exports of Goods and Services"
+      },
+      {
+        "provider": "fred",
+        "id": "IMPGSC1",
+        "alias": "IMPGSC1",
+        "title": "Real Imports of Goods and Services"
+      },
+      {
+        "provider": "fred",
+        "id": "NETEXP",
+        "alias": "NETEXP",
+        "title": "Real Net Exports"
+      },
+      {
+        "provider": "fred",
+        "id": "BOPBCA",
+        "alias": "BOPBCA",
+        "title": "Current Account Balance"
+      }
     ],
     "formulas": [
       "EXPORT_IMPORT_GAP = EXPGSC1 - IMPGSC1"
     ],
-    "default_plot_vars": ["BOPGSTB", "NETEXP", "EXPGSC1", "IMPGSC1"]
+    "default_plot_vars": [
+      "BOPGSTB",
+      "NETEXP",
+      "EXPGSC1",
+      "IMPGSC1"
+    ]
   },
   {
     "id": "industrial_orders_inventory",
@@ -407,16 +918,47 @@
     "default_chart_type": "line",
     "default_date_start": "1992-01-01",
     "series": [
-      { "provider": "fred", "id": "INDPRO", "alias": "INDPRO", "title": "Industrial Production" },
-      { "provider": "fred", "id": "IPMAN", "alias": "IPMAN", "title": "Manufacturing Production" },
-      { "provider": "fred", "id": "AMTMNO", "alias": "AMTMNO", "title": "Manufacturers' New Orders" },
-      { "provider": "fred", "id": "AMTMVS", "alias": "AMTMVS", "title": "Manufacturers' Total Inventories" },
-      { "provider": "fred", "id": "ISRATIO", "alias": "ISRATIO", "title": "Business Inventories to Sales Ratio" }
+      {
+        "provider": "fred",
+        "id": "INDPRO",
+        "alias": "INDPRO",
+        "title": "Industrial Production"
+      },
+      {
+        "provider": "fred",
+        "id": "IPMAN",
+        "alias": "IPMAN",
+        "title": "Manufacturing Production"
+      },
+      {
+        "provider": "fred",
+        "id": "AMTMNO",
+        "alias": "AMTMNO",
+        "title": "Manufacturers' New Orders"
+      },
+      {
+        "provider": "fred",
+        "id": "AMTMVS",
+        "alias": "AMTMVS",
+        "title": "Manufacturers' Total Inventories"
+      },
+      {
+        "provider": "fred",
+        "id": "ISRATIO",
+        "alias": "ISRATIO",
+        "title": "Business Inventories to Sales Ratio"
+      }
     ],
     "formulas": [
       "ORDERS_INVENTORY_GAP = AMTMNO - AMTMVS"
     ],
-    "default_plot_vars": ["INDPRO", "IPMAN", "AMTMNO", "AMTMVS", "ISRATIO"]
+    "default_plot_vars": [
+      "INDPRO",
+      "IPMAN",
+      "AMTMNO",
+      "AMTMVS",
+      "ISRATIO"
+    ]
   },
   {
     "id": "consumer_credit_g19",
@@ -430,17 +972,47 @@
     "default_chart_type": "line",
     "default_date_start": "1980-01-01",
     "series": [
-      { "provider": "fred", "id": "TOTALSL", "alias": "TOTALSL", "title": "Total Consumer Credit" },
-      { "provider": "fred", "id": "REVOLSL", "alias": "REVOLSL", "title": "Revolving Consumer Credit" },
-      { "provider": "fred", "id": "NONREVSL", "alias": "NONREVSL", "title": "Nonrevolving Consumer Credit" },
-      { "provider": "fred", "id": "TDSP", "alias": "TDSP", "title": "Household Debt Service Payments" },
-      { "provider": "fred", "id": "DRCCLACBS", "alias": "DRCCLACBS", "title": "Credit Card Delinquency Rate" }
+      {
+        "provider": "fred",
+        "id": "TOTALSL",
+        "alias": "TOTALSL",
+        "title": "Total Consumer Credit"
+      },
+      {
+        "provider": "fred",
+        "id": "REVOLSL",
+        "alias": "REVOLSL",
+        "title": "Revolving Consumer Credit"
+      },
+      {
+        "provider": "fred",
+        "id": "NONREVSL",
+        "alias": "NONREVSL",
+        "title": "Nonrevolving Consumer Credit"
+      },
+      {
+        "provider": "fred",
+        "id": "TDSP",
+        "alias": "TDSP",
+        "title": "Household Debt Service Payments"
+      },
+      {
+        "provider": "fred",
+        "id": "DRCCLACBS",
+        "alias": "DRCCLACBS",
+        "title": "Credit Card Delinquency Rate"
+      }
     ],
     "formulas": [
       "REVOLVING_SHARE = REVOLSL / TOTALSL",
       "NONREVOLVING_SHARE = NONREVSL / TOTALSL"
     ],
-    "default_plot_vars": ["TOTALSL", "REVOLSL", "NONREVSL", "TDSP"]
+    "default_plot_vars": [
+      "TOTALSL",
+      "REVOLSL",
+      "NONREVSL",
+      "TDSP"
+    ]
   },
   {
     "id": "recession_monitor_composite",
@@ -454,16 +1026,46 @@
     "default_chart_type": "line",
     "default_date_start": "1985-01-01",
     "series": [
-      { "provider": "fred", "id": "USREC", "alias": "USREC", "title": "NBER Recession Indicator" },
-      { "provider": "fred", "id": "T10Y3M", "alias": "T10Y3M", "title": "10Y - 3M Spread" },
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "Unemployment Rate" },
-      { "provider": "fred", "id": "PAYEMS", "alias": "PAYEMS", "title": "Payrolls" },
-      { "provider": "fred", "id": "NFCI", "alias": "NFCI", "title": "National Financial Conditions Index" }
+      {
+        "provider": "fred",
+        "id": "USREC",
+        "alias": "USREC",
+        "title": "NBER Recession Indicator"
+      },
+      {
+        "provider": "fred",
+        "id": "T10Y3M",
+        "alias": "T10Y3M",
+        "title": "10Y - 3M Spread"
+      },
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "PAYEMS",
+        "alias": "PAYEMS",
+        "title": "Payrolls"
+      },
+      {
+        "provider": "fred",
+        "id": "NFCI",
+        "alias": "NFCI",
+        "title": "National Financial Conditions Index"
+      }
     ],
     "formulas": [
       "CURVE_INVERTED = T10Y3M < 0"
     ],
-    "default_plot_vars": ["T10Y3M", "UNRATE", "NFCI", "USREC"]
+    "default_plot_vars": [
+      "T10Y3M",
+      "UNRATE",
+      "NFCI",
+      "USREC"
+    ]
   },
   {
     "id": "beige_book_crosscheck",
@@ -477,16 +1079,47 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "Unemployment Rate" },
-      { "provider": "fred", "id": "INDPRO", "alias": "INDPRO", "title": "Industrial Production" },
-      { "provider": "fred", "id": "RSAFS", "alias": "RSAFS", "title": "Retail Sales" },
-      { "provider": "fred", "id": "HOUST", "alias": "HOUST", "title": "Housing Starts" },
-      { "provider": "fred", "id": "PPIACO", "alias": "PPIACO", "title": "Producer Prices" }
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "INDPRO",
+        "alias": "INDPRO",
+        "title": "Industrial Production"
+      },
+      {
+        "provider": "fred",
+        "id": "RSAFS",
+        "alias": "RSAFS",
+        "title": "Retail Sales"
+      },
+      {
+        "provider": "fred",
+        "id": "HOUST",
+        "alias": "HOUST",
+        "title": "Housing Starts"
+      },
+      {
+        "provider": "fred",
+        "id": "PPIACO",
+        "alias": "PPIACO",
+        "title": "Producer Prices"
+      }
     ],
     "formulas": [
       "ACTIVITY_MINUS_UNEMP = INDPRO - UNRATE"
     ],
-    "default_plot_vars": ["UNRATE", "INDPRO", "RSAFS", "HOUST", "PPIACO"]
+    "default_plot_vars": [
+      "UNRATE",
+      "INDPRO",
+      "RSAFS",
+      "HOUST",
+      "PPIACO"
+    ]
   },
   {
     "id": "regional_housing_split",
@@ -500,16 +1133,47 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "HOUST", "alias": "HOUST", "title": "Housing Starts: Total" },
-      { "provider": "fred", "id": "HOUSTNE", "alias": "HOUSTNE", "title": "Housing Starts: Northeast" },
-      { "provider": "fred", "id": "HOUSTMW", "alias": "HOUSTMW", "title": "Housing Starts: Midwest" },
-      { "provider": "fred", "id": "HOUSTS", "alias": "HOUSTS", "title": "Housing Starts: South" },
-      { "provider": "fred", "id": "HOUSTW", "alias": "HOUSTW", "title": "Housing Starts: West" }
+      {
+        "provider": "fred",
+        "id": "HOUST",
+        "alias": "HOUST",
+        "title": "Housing Starts: Total"
+      },
+      {
+        "provider": "fred",
+        "id": "HOUSTNE",
+        "alias": "HOUSTNE",
+        "title": "Housing Starts: Northeast"
+      },
+      {
+        "provider": "fred",
+        "id": "HOUSTMW",
+        "alias": "HOUSTMW",
+        "title": "Housing Starts: Midwest"
+      },
+      {
+        "provider": "fred",
+        "id": "HOUSTS",
+        "alias": "HOUSTS",
+        "title": "Housing Starts: South"
+      },
+      {
+        "provider": "fred",
+        "id": "HOUSTW",
+        "alias": "HOUSTW",
+        "title": "Housing Starts: West"
+      }
     ],
     "formulas": [
       "REGION_SUM = HOUSTNE + HOUSTMW + HOUSTS + HOUSTW"
     ],
-    "default_plot_vars": ["HOUST", "HOUSTNE", "HOUSTMW", "HOUSTS", "HOUSTW"]
+    "default_plot_vars": [
+      "HOUST",
+      "HOUSTNE",
+      "HOUSTMW",
+      "HOUSTS",
+      "HOUSTW"
+    ]
   },
   {
     "id": "energy_and_inflation_pass",
@@ -523,16 +1187,46 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "DCOILWTICO", "alias": "DCOILWTICO", "title": "WTI Crude Oil Price" },
-      { "provider": "fred", "id": "PPIACO", "alias": "PPIACO", "title": "Producer Price Index" },
-      { "provider": "fred", "id": "CPIAUCSL", "alias": "CPIAUCSL", "title": "Consumer Price Index" },
-      { "provider": "fred", "id": "CPILFESL", "alias": "CPILFESL", "title": "Core CPI" },
-      { "provider": "fred", "id": "PCEPI", "alias": "PCEPI", "title": "PCE Price Index" }
+      {
+        "provider": "fred",
+        "id": "DCOILWTICO",
+        "alias": "DCOILWTICO",
+        "title": "WTI Crude Oil Price"
+      },
+      {
+        "provider": "fred",
+        "id": "PPIACO",
+        "alias": "PPIACO",
+        "title": "Producer Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "CPIAUCSL",
+        "alias": "CPIAUCSL",
+        "title": "Consumer Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "CPILFESL",
+        "alias": "CPILFESL",
+        "title": "Core CPI"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPI",
+        "alias": "PCEPI",
+        "title": "PCE Price Index"
+      }
     ],
     "formulas": [
       "HEADLINE_CORE_CPI_GAP = CPIAUCSL - CPILFESL"
     ],
-    "default_plot_vars": ["DCOILWTICO", "PPIACO", "CPIAUCSL", "CPILFESL"]
+    "default_plot_vars": [
+      "DCOILWTICO",
+      "PPIACO",
+      "CPIAUCSL",
+      "CPILFESL"
+    ]
   },
   {
     "id": "slack_rule_of_thumb",
@@ -546,17 +1240,47 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "fred", "id": "FEDFUNDS", "alias": "FEDFUNDS", "title": "Federal Funds Rate" },
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "Unemployment Rate" },
-      { "provider": "fred", "id": "NROU", "alias": "NROU", "title": "Natural Rate of Unemployment" },
-      { "provider": "fred", "id": "PCEPI", "alias": "PCEPI", "title": "PCE Price Index" },
-      { "provider": "fred", "id": "PCEPILFE", "alias": "PCEPILFE", "title": "Core PCE" }
+      {
+        "provider": "fred",
+        "id": "FEDFUNDS",
+        "alias": "FEDFUNDS",
+        "title": "Federal Funds Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "NROU",
+        "alias": "NROU",
+        "title": "Natural Rate of Unemployment"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPI",
+        "alias": "PCEPI",
+        "title": "PCE Price Index"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPILFE",
+        "alias": "PCEPILFE",
+        "title": "Core PCE"
+      }
     ],
     "formulas": [
       "UNEMP_GAP = UNRATE - NROU",
       "CORE_HEADLINE_PCE_GAP = PCEPILFE - PCEPI"
     ],
-    "default_plot_vars": ["FEDFUNDS", "UNRATE", "NROU", "UNEMP_GAP"]
+    "default_plot_vars": [
+      "FEDFUNDS",
+      "UNRATE",
+      "NROU",
+      "UNEMP_GAP"
+    ]
   },
   {
     "id": "bls_fred_crosswalk",
@@ -570,16 +1294,342 @@
     "default_chart_type": "line",
     "default_date_start": "1990-01-01",
     "series": [
-      { "provider": "bls", "id": "LNS14000000", "alias": "BLS_UNRATE", "title": "BLS Unemployment Rate" },
-      { "provider": "bls", "id": "CES0000000001", "alias": "BLS_PAYEMS", "title": "BLS Total Nonfarm Payrolls" },
-      { "provider": "bls", "id": "CUUR0000SA0", "alias": "BLS_CPI", "title": "BLS CPI-U" },
-      { "provider": "fred", "id": "UNRATE", "alias": "UNRATE", "title": "FRED Unemployment Rate" },
-      { "provider": "fred", "id": "CPIAUCSL", "alias": "CPIAUCSL", "title": "FRED CPI-U" }
+      {
+        "provider": "bls",
+        "id": "LNS14000000",
+        "alias": "BLS_UNRATE",
+        "title": "BLS Unemployment Rate"
+      },
+      {
+        "provider": "bls",
+        "id": "CES0000000001",
+        "alias": "BLS_PAYEMS",
+        "title": "BLS Total Nonfarm Payrolls"
+      },
+      {
+        "provider": "bls",
+        "id": "CUUR0000SA0",
+        "alias": "BLS_CPI",
+        "title": "BLS CPI-U"
+      },
+      {
+        "provider": "fred",
+        "id": "UNRATE",
+        "alias": "UNRATE",
+        "title": "FRED Unemployment Rate"
+      },
+      {
+        "provider": "fred",
+        "id": "CPIAUCSL",
+        "alias": "CPIAUCSL",
+        "title": "FRED CPI-U"
+      }
     ],
     "formulas": [
       "UNRATE_SOURCE_GAP = BLS_UNRATE - UNRATE",
       "CPI_SOURCE_GAP = BLS_CPI - CPIAUCSL"
     ],
-    "default_plot_vars": ["BLS_UNRATE", "UNRATE", "BLS_CPI", "CPIAUCSL"]
+    "default_plot_vars": [
+      "BLS_UNRATE",
+      "UNRATE",
+      "BLS_CPI",
+      "CPIAUCSL"
+    ]
+  },
+  {
+    "id": "bea_vs_fred_gdp_validation",
+    "name": "BEA vs FRED GDP Cross-Validation",
+    "theme": "Data QA",
+    "description": "Cross-source GDP panel comparing BEA NIPA pulls against FRED GDP mirrors.",
+    "source": {
+      "name": "BEA API + FRED",
+      "url": "https://apps.bea.gov/API/docs/index.htm"
+    },
+    "required_keys": [
+      "BEA API key"
+    ],
+    "default_chart_type": "line",
+    "default_date_start": "1995-01-01",
+    "series": [
+      {
+        "provider": "bea",
+        "id": "BEA_NOMINAL_GDP",
+        "alias": "BEA_GDP_NOM"
+      },
+      {
+        "provider": "bea",
+        "id": "BEA_REAL_GDP",
+        "alias": "BEA_GDP_REAL"
+      },
+      {
+        "provider": "fred",
+        "id": "GDP",
+        "alias": "GDP",
+        "title": "Nominal GDP (FRED)"
+      },
+      {
+        "provider": "fred",
+        "id": "GDPC1",
+        "alias": "GDPC1",
+        "title": "Real GDP (FRED)"
+      }
+    ],
+    "formulas": [
+      "GDP_LEVEL_GAP = BEA_GDP_NOM - GDP",
+      "REAL_GDP_GAP = BEA_GDP_REAL - GDPC1"
+    ],
+    "default_plot_vars": [
+      "BEA_GDP_NOM",
+      "GDP",
+      "BEA_GDP_REAL",
+      "GDPC1"
+    ]
+  },
+  {
+    "id": "treasury_rate_stack_policy_bridge",
+    "name": "Treasury Rate Stack and Policy Bridge",
+    "theme": "Rates",
+    "description": "Treasury average interest rates side-by-side with policy benchmarks.",
+    "source": {
+      "name": "U.S. Treasury FiscalData + Federal Reserve",
+      "url": "https://fiscaldata.treasury.gov/"
+    },
+    "default_chart_type": "line",
+    "default_date_start": "2003-01-01",
+    "series": [
+      {
+        "provider": "treasury",
+        "id": "TREASURY_BILLS_AVG_RATE",
+        "alias": "UST_BILL_RATE"
+      },
+      {
+        "provider": "treasury",
+        "id": "TREASURY_NOTES_AVG_RATE",
+        "alias": "UST_NOTE_RATE"
+      },
+      {
+        "provider": "treasury",
+        "id": "TREASURY_BONDS_AVG_RATE",
+        "alias": "UST_BOND_RATE"
+      },
+      {
+        "provider": "fred",
+        "id": "FEDFUNDS",
+        "alias": "FEDFUNDS"
+      },
+      {
+        "provider": "fred",
+        "id": "SOFR",
+        "alias": "SOFR"
+      }
+    ],
+    "formulas": [
+      "UST_BOND_BILL_SPREAD = UST_BOND_RATE - UST_BILL_RATE",
+      "SOFR_TBILL_GAP = SOFR - UST_BILL_RATE"
+    ],
+    "default_plot_vars": [
+      "UST_BILL_RATE",
+      "UST_NOTE_RATE",
+      "UST_BOND_RATE",
+      "FEDFUNDS",
+      "SOFR"
+    ]
+  },
+  {
+    "id": "treasury_debt_liquidity_monitor",
+    "name": "Treasury Debt and Liquidity Monitor",
+    "theme": "Fiscal",
+    "description": "Track public debt dynamics against Fed balance-sheet liquidity indicators.",
+    "source": {
+      "name": "U.S. Treasury FiscalData + Federal Reserve H.4.1",
+      "url": "https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/debt-to-the-penny"
+    },
+    "default_chart_type": "line",
+    "default_date_start": "2010-01-01",
+    "series": [
+      {
+        "provider": "treasury",
+        "id": "TREASURY_TOTAL_PUBLIC_DEBT",
+        "alias": "UST_TOTAL_DEBT"
+      },
+      {
+        "provider": "treasury",
+        "id": "TREASURY_BILLS_AVG_RATE",
+        "alias": "UST_BILL_RATE"
+      },
+      {
+        "provider": "fred",
+        "id": "WALCL",
+        "alias": "WALCL"
+      },
+      {
+        "provider": "fred",
+        "id": "WRESBAL",
+        "alias": "WRESBAL"
+      },
+      {
+        "provider": "fred",
+        "id": "WTREGEN",
+        "alias": "WTREGEN"
+      }
+    ],
+    "formulas": [
+      "DEBT_TO_FED_ASSETS = UST_TOTAL_DEBT / WALCL"
+    ],
+    "default_plot_vars": [
+      "UST_TOTAL_DEBT",
+      "WALCL",
+      "WRESBAL",
+      "WTREGEN"
+    ]
+  },
+  {
+    "id": "census_ag_export_watch",
+    "name": "Census Agriculture Export Watch",
+    "theme": "External",
+    "description": "Monitor Census monthly exports for selected agricultural and food categories.",
+    "source": {
+      "name": "U.S. Census International Trade API",
+      "url": "https://api.census.gov/data/timeseries/intltrade/exports/enduse"
+    },
+    "default_chart_type": "line",
+    "default_date_start": "2012-01-01",
+    "series": [
+      {
+        "provider": "census",
+        "id": "CENSUS_EXPORT_SOYBEANS",
+        "alias": "CEN_EXP_SOY"
+      },
+      {
+        "provider": "census",
+        "id": "CENSUS_EXPORT_WHEAT",
+        "alias": "CEN_EXP_WHEAT"
+      },
+      {
+        "provider": "census",
+        "id": "CENSUS_EXPORT_FISH_SHELLFISH",
+        "alias": "CEN_EXP_FISH"
+      },
+      {
+        "provider": "fred",
+        "id": "DEXCHUS",
+        "alias": "DEXCHUS"
+      },
+      {
+        "provider": "fred",
+        "id": "BOPGSTB",
+        "alias": "BOPGSTB"
+      }
+    ],
+    "formulas": [
+      "SOY_WHEAT_RATIO = CEN_EXP_SOY / CEN_EXP_WHEAT",
+      "SOY_PLUS_WHEAT = CEN_EXP_SOY + CEN_EXP_WHEAT"
+    ],
+    "default_plot_vars": [
+      "CEN_EXP_SOY",
+      "CEN_EXP_WHEAT",
+      "CEN_EXP_FISH",
+      "SOY_WHEAT_RATIO"
+    ]
+  },
+  {
+    "id": "census_food_trade_balance_proxy",
+    "name": "Census Food Trade Balance Proxy",
+    "theme": "External",
+    "description": "Cross-check selected food-related import and export flows from Census timeseries.",
+    "source": {
+      "name": "U.S. Census International Trade API",
+      "url": "https://api.census.gov/data/timeseries/intltrade/imports/enduse"
+    },
+    "default_chart_type": "line",
+    "default_date_start": "2012-01-01",
+    "series": [
+      {
+        "provider": "census",
+        "id": "CENSUS_EXPORT_SOYBEANS",
+        "alias": "CEN_EXP_SOY"
+      },
+      {
+        "provider": "census",
+        "id": "CENSUS_EXPORT_WHEAT",
+        "alias": "CEN_EXP_WHEAT"
+      },
+      {
+        "provider": "census",
+        "id": "CENSUS_IMPORT_MEAT_PRODUCTS",
+        "alias": "CEN_IMP_MEAT"
+      },
+      {
+        "provider": "census",
+        "id": "CENSUS_IMPORT_FISH_SHELLFISH",
+        "alias": "CEN_IMP_FISH"
+      },
+      {
+        "provider": "fred",
+        "id": "DCOILWTICO",
+        "alias": "DCOILWTICO"
+      }
+    ],
+    "formulas": [
+      "FOOD_TRADE_PROXY = CEN_EXP_SOY + CEN_EXP_WHEAT - CEN_IMP_MEAT - CEN_IMP_FISH"
+    ],
+    "default_plot_vars": [
+      "CEN_EXP_SOY",
+      "CEN_EXP_WHEAT",
+      "CEN_IMP_MEAT",
+      "CEN_IMP_FISH",
+      "FOOD_TRADE_PROXY"
+    ]
+  },
+  {
+    "id": "bea_pce_real_nominal_panel",
+    "name": "BEA Real vs Nominal PCE Panel",
+    "theme": "Activity",
+    "description": "Pair BEA real/nominal PCE with FRED inflation and real spending benchmarks.",
+    "source": {
+      "name": "BEA API + FRED",
+      "url": "https://apps.bea.gov/API/docs/index.htm"
+    },
+    "required_keys": [
+      "BEA API key"
+    ],
+    "default_chart_type": "line",
+    "default_date_start": "1995-01-01",
+    "series": [
+      {
+        "provider": "bea",
+        "id": "BEA_NOMINAL_PCE",
+        "alias": "BEA_PCE_NOM"
+      },
+      {
+        "provider": "bea",
+        "id": "BEA_REAL_PCE",
+        "alias": "BEA_PCE_REAL"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEPI",
+        "alias": "PCEPI"
+      },
+      {
+        "provider": "fred",
+        "id": "PCEC96",
+        "alias": "PCEC96"
+      },
+      {
+        "provider": "fred",
+        "id": "CPIAUCSL",
+        "alias": "CPIAUCSL"
+      }
+    ],
+    "formulas": [
+      "REAL_NOMINAL_PCE_GAP = BEA_PCE_REAL - BEA_PCE_NOM"
+    ],
+    "default_plot_vars": [
+      "BEA_PCE_NOM",
+      "BEA_PCE_REAL",
+      "PCEPI",
+      "PCEC96"
+    ]
   }
 ]

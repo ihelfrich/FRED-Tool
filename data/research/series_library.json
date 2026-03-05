@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-05T00:37:24.318Z",
+  "generated_at_utc": "2026-03-05T00:49:13.983Z",
   "schema_version": "1.0.0",
   "methodology": {
     "description": "Series are ranked using FRED web search popularity ordering across policy-relevant macro terms, then constrained to preserve report coverage and dataset continuity.",
@@ -37,7 +37,7 @@
     "connection_rule": "Connections combine co-appearance in report presets (weight 3) and co-appearance in top search results for the same query term (weight 1)."
   },
   "summary": {
-    "preset_count": 25,
+    "preset_count": 31,
     "unique_preset_fred_series": 93,
     "candidate_pool_size": 2516,
     "final_series_count": 100
@@ -52,7 +52,7 @@
       "observation_start": "1962-01-02",
       "observation_end": "2026-03-03",
       "span_years": 64.16,
-      "observation_count": null,
+      "observation_count": 16741,
       "popularity_score": 112,
       "term_hits": 3,
       "best_rank": 3,
@@ -368,14 +368,14 @@
         },
         {
           "id": "GDPC1",
-          "title": "Real GDP",
+          "title": "Real GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
         },
         {
           "id": "GDP",
-          "title": "Nominal GDP",
+          "title": "Nominal GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -1394,14 +1394,14 @@
         },
         {
           "id": "GDPC1",
-          "title": "Real GDP",
+          "title": "Real GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
         },
         {
           "id": "GDP",
-          "title": "Nominal GDP",
+          "title": "Nominal GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -1621,6 +1621,127 @@
       ]
     },
     {
+      "id": "BOPGSTB",
+      "title": "Trade Balance: Goods and Services, Balance of Payments Basis",
+      "units": "Millions of Dollars",
+      "frequency": "Monthly",
+      "seasonal_adjustment": "Seasonally Adjusted",
+      "observation_start": "1992-01-01",
+      "observation_end": "2025-12-01",
+      "span_years": 33.92,
+      "observation_count": 408,
+      "popularity_score": 44,
+      "term_hits": 1,
+      "best_rank": 1,
+      "popularity_rank": 76,
+      "report_usage_count": 2,
+      "themes": [
+        "External"
+      ],
+      "query_terms": [
+        "trade balance"
+      ],
+      "related_formats": [],
+      "connected_series": [
+        {
+          "id": "EXPGSC1",
+          "title": "Real Exports of Goods and Services",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "IMPGSC1",
+          "title": "Real Imports of Goods and Services",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "NETEXP",
+          "title": "Real Net Exports",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "BOPBCA",
+          "title": "Current Account Balance",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "DEXCHUS",
+          "title": "CNY / USD",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
+      "id": "GDP",
+      "title": "Gross Domestic Product",
+      "units": "Billions of Dollars",
+      "frequency": "Quarterly",
+      "seasonal_adjustment": "Seasonally Adjusted Annual Rate",
+      "observation_start": "1947-01-01",
+      "observation_end": "2025-10-01",
+      "span_years": 78.75,
+      "observation_count": 316,
+      "popularity_score": 44,
+      "term_hits": 1,
+      "best_rank": 1,
+      "popularity_rank": 65,
+      "report_usage_count": 2,
+      "themes": [
+        "Activity",
+        "Data QA"
+      ],
+      "query_terms": [
+        "gdp"
+      ],
+      "related_formats": [
+        "NA000334Q",
+        "A191RP1Q027SBEA",
+        "NC000334Q",
+        "GDPA",
+        "FYGDP",
+        "A191RP1A027NBEA"
+      ],
+      "connected_series": [
+        {
+          "id": "GDPC1",
+          "title": "Real GDP (FRED)",
+          "score": 7,
+          "preset_overlap": 2,
+          "query_overlap": 1
+        },
+        {
+          "id": "INDPRO",
+          "title": "Industrial Production",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "CUMFN",
+          "title": "Capacity Utilization",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "TCU",
+          "title": "Total Industry Capacity Utilization",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
       "id": "NFCI",
       "title": "Chicago Fed National Financial Conditions Index",
       "units": "Index",
@@ -1682,59 +1803,6 @@
         {
           "id": "T10Y3M",
           "title": "10Y - 3M Spread",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        }
-      ]
-    },
-    {
-      "id": "BOPGSTB",
-      "title": "Trade Balance: Goods and Services, Balance of Payments Basis",
-      "units": "Millions of Dollars",
-      "frequency": "Monthly",
-      "seasonal_adjustment": "Seasonally Adjusted",
-      "observation_start": "1992-01-01",
-      "observation_end": "2025-12-01",
-      "span_years": 33.92,
-      "observation_count": 408,
-      "popularity_score": 44,
-      "term_hits": 1,
-      "best_rank": 1,
-      "popularity_rank": 76,
-      "report_usage_count": 1,
-      "themes": [
-        "External"
-      ],
-      "query_terms": [
-        "trade balance"
-      ],
-      "related_formats": [],
-      "connected_series": [
-        {
-          "id": "EXPGSC1",
-          "title": "Real Exports of Goods and Services",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "IMPGSC1",
-          "title": "Real Imports of Goods and Services",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "NETEXP",
-          "title": "Real Net Exports",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "BOPBCA",
-          "title": "Current Account Balance",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -1932,66 +2000,6 @@
           "score": 1,
           "preset_overlap": 0,
           "query_overlap": 1
-        }
-      ]
-    },
-    {
-      "id": "GDP",
-      "title": "Gross Domestic Product",
-      "units": "Billions of Dollars",
-      "frequency": "Quarterly",
-      "seasonal_adjustment": "Seasonally Adjusted Annual Rate",
-      "observation_start": "1947-01-01",
-      "observation_end": "2025-10-01",
-      "span_years": 78.75,
-      "observation_count": 316,
-      "popularity_score": 44,
-      "term_hits": 1,
-      "best_rank": 1,
-      "popularity_rank": 65,
-      "report_usage_count": 1,
-      "themes": [
-        "Activity"
-      ],
-      "query_terms": [
-        "gdp"
-      ],
-      "related_formats": [
-        "NA000334Q",
-        "A191RP1Q027SBEA",
-        "NC000334Q",
-        "GDPA",
-        "FYGDP",
-        "A191RP1A027NBEA"
-      ],
-      "connected_series": [
-        {
-          "id": "GDPC1",
-          "title": "Real GDP",
-          "score": 4,
-          "preset_overlap": 1,
-          "query_overlap": 1
-        },
-        {
-          "id": "INDPRO",
-          "title": "Industrial Production",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "CUMFN",
-          "title": "Capacity Utilization",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "TCU",
-          "title": "Total Industry Capacity Utilization",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
         }
       ]
     },
@@ -2250,6 +2258,126 @@
       ]
     },
     {
+      "id": "DCOILWTICO",
+      "title": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
+      "units": "Dollars per Barrel",
+      "frequency": "Daily",
+      "seasonal_adjustment": "Not Seasonally Adjusted",
+      "observation_start": "1986-01-02",
+      "observation_end": "2026-03-02",
+      "span_years": 40.16,
+      "observation_count": 10478,
+      "popularity_score": 43,
+      "term_hits": 1,
+      "best_rank": 2,
+      "popularity_rank": 99,
+      "report_usage_count": 2,
+      "themes": [
+        "Prices",
+        "External"
+      ],
+      "query_terms": [
+        "oil prices"
+      ],
+      "related_formats": [
+        "WCOILWTICO",
+        "MCOILWTICO",
+        "ACOILWTICO"
+      ],
+      "connected_series": [
+        {
+          "id": "PPIACO",
+          "title": "Producer Price Index",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "CPIAUCSL",
+          "title": "FRED CPI-U",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "CPILFESL",
+          "title": "Core CPI",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "PCEPI",
+          "title": "PCE Price Index",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
+      "id": "GDPC1",
+      "title": "Real Gross Domestic Product",
+      "units": "Billions of Chained 2017 Dollars",
+      "frequency": "Quarterly",
+      "seasonal_adjustment": "Seasonally Adjusted Annual Rate",
+      "observation_start": "1947-01-01",
+      "observation_end": "2025-10-01",
+      "span_years": 78.75,
+      "observation_count": 316,
+      "popularity_score": 43,
+      "term_hits": 1,
+      "best_rank": 2,
+      "popularity_rank": 84,
+      "report_usage_count": 2,
+      "themes": [
+        "Activity",
+        "Data QA"
+      ],
+      "query_terms": [
+        "gdp"
+      ],
+      "related_formats": [
+        "ND000334Q",
+        "A191RL1Q225SBEA",
+        "A191RO1Q156NBEA",
+        "OB000334Q",
+        "NB000334Q",
+        "GDPCA",
+        "A191RL1A225NBEA"
+      ],
+      "connected_series": [
+        {
+          "id": "GDP",
+          "title": "Nominal GDP (FRED)",
+          "score": 7,
+          "preset_overlap": 2,
+          "query_overlap": 1
+        },
+        {
+          "id": "INDPRO",
+          "title": "Industrial Production",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "CUMFN",
+          "title": "Capacity Utilization",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "TCU",
+          "title": "Total Industry Capacity Utilization",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
       "id": "RSAFS",
       "title": "Advance Retail Sales: Retail Trade and Food Services",
       "units": "Millions of Dollars",
@@ -2377,63 +2505,6 @@
       ]
     },
     {
-      "id": "DCOILWTICO",
-      "title": "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma",
-      "units": "Dollars per Barrel",
-      "frequency": "Daily",
-      "seasonal_adjustment": "Not Seasonally Adjusted",
-      "observation_start": "1986-01-02",
-      "observation_end": "2026-03-02",
-      "span_years": 40.16,
-      "observation_count": 10478,
-      "popularity_score": 43,
-      "term_hits": 1,
-      "best_rank": 2,
-      "popularity_rank": 99,
-      "report_usage_count": 1,
-      "themes": [
-        "Prices"
-      ],
-      "query_terms": [
-        "oil prices"
-      ],
-      "related_formats": [
-        "WCOILWTICO",
-        "MCOILWTICO",
-        "ACOILWTICO"
-      ],
-      "connected_series": [
-        {
-          "id": "PPIACO",
-          "title": "Producer Price Index",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "CPIAUCSL",
-          "title": "FRED CPI-U",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "CPILFESL",
-          "title": "Core CPI",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "PCEPI",
-          "title": "PCE Price Index",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        }
-      ]
-    },
-    {
       "id": "DEXJPUS",
       "title": "Japanese Yen to U.S. Dollar Spot Exchange Rate",
       "units": "Japanese Yen to One U.S. Dollar",
@@ -2486,67 +2557,6 @@
           "score": 4,
           "preset_overlap": 1,
           "query_overlap": 1
-        }
-      ]
-    },
-    {
-      "id": "GDPC1",
-      "title": "Real Gross Domestic Product",
-      "units": "Billions of Chained 2017 Dollars",
-      "frequency": "Quarterly",
-      "seasonal_adjustment": "Seasonally Adjusted Annual Rate",
-      "observation_start": "1947-01-01",
-      "observation_end": "2025-10-01",
-      "span_years": 78.75,
-      "observation_count": 316,
-      "popularity_score": 43,
-      "term_hits": 1,
-      "best_rank": 2,
-      "popularity_rank": 84,
-      "report_usage_count": 1,
-      "themes": [
-        "Activity"
-      ],
-      "query_terms": [
-        "gdp"
-      ],
-      "related_formats": [
-        "ND000334Q",
-        "A191RL1Q225SBEA",
-        "A191RO1Q156NBEA",
-        "OB000334Q",
-        "NB000334Q",
-        "GDPCA",
-        "A191RL1A225NBEA"
-      ],
-      "connected_series": [
-        {
-          "id": "GDP",
-          "title": "Nominal GDP",
-          "score": 4,
-          "preset_overlap": 1,
-          "query_overlap": 1
-        },
-        {
-          "id": "INDPRO",
-          "title": "Industrial Production",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "CUMFN",
-          "title": "Capacity Utilization",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "TCU",
-          "title": "Total Industry Capacity Utilization",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
         }
       ]
     },
@@ -2690,7 +2700,7 @@
       "term_hits": 1,
       "best_rank": 3,
       "popularity_rank": 119,
-      "report_usage_count": 1,
+      "report_usage_count": 2,
       "themes": [
         "External"
       ],
@@ -2729,6 +2739,13 @@
           "score": 4,
           "preset_overlap": 1,
           "query_overlap": 1
+        },
+        {
+          "id": "BOPGSTB",
+          "title": "Trade Balance: Goods and Services",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
         }
       ]
     },
@@ -3242,10 +3259,11 @@
       "term_hits": 1,
       "best_rank": 6,
       "popularity_rank": 172,
-      "report_usage_count": 3,
+      "report_usage_count": 4,
       "themes": [
         "Prices",
-        "Data QA"
+        "Data QA",
+        "Activity"
       ],
       "query_terms": [
         "inflation"
@@ -3256,18 +3274,18 @@
       ],
       "connected_series": [
         {
+          "id": "PCEPI",
+          "title": "PCE Price Index",
+          "score": 9,
+          "preset_overlap": 3,
+          "query_overlap": 0
+        },
+        {
           "id": "CPILFESL",
           "title": "Core CPI",
           "score": 7,
           "preset_overlap": 2,
           "query_overlap": 1
-        },
-        {
-          "id": "PCEPI",
-          "title": "PCE Price Index",
-          "score": 6,
-          "preset_overlap": 2,
-          "query_overlap": 0
         },
         {
           "id": "PPIACO",
@@ -3371,6 +3389,74 @@
       ]
     },
     {
+      "id": "WTREGEN",
+      "title": "Liabilities and Capital: Liabilities: Deposits with F.R. Banks, Other Than Reserve Balances: U.S. Treasury, General Account: Week Average",
+      "units": "Millions of U.S. Dollars",
+      "frequency": "Weekly",
+      "seasonal_adjustment": "Not Seasonally Adjusted",
+      "observation_start": "2002-12-18",
+      "observation_end": "2026-02-25",
+      "span_years": 23.19,
+      "observation_count": 1211,
+      "popularity_score": 39,
+      "term_hits": 1,
+      "best_rank": 6,
+      "popularity_rank": 176,
+      "report_usage_count": 2,
+      "themes": [
+        "Banking",
+        "Fiscal"
+      ],
+      "query_terms": [
+        "treasury"
+      ],
+      "related_formats": [],
+      "connected_series": [
+        {
+          "id": "WALCL",
+          "title": "Federal Reserve Total Assets",
+          "score": 6,
+          "preset_overlap": 2,
+          "query_overlap": 0
+        },
+        {
+          "id": "WRESBAL",
+          "title": "Reserve Balances",
+          "score": 6,
+          "preset_overlap": 2,
+          "query_overlap": 0
+        },
+        {
+          "id": "RRPONTSYD",
+          "title": "Overnight Reverse Repo",
+          "score": 4,
+          "preset_overlap": 1,
+          "query_overlap": 1
+        },
+        {
+          "id": "RRPONTTLD",
+          "title": "Overnight Reverse Repo - Total",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "T10Y2Y",
+          "title": "10Y - 2Y Treasury Spread",
+          "score": 1,
+          "preset_overlap": 0,
+          "query_overlap": 1
+        },
+        {
+          "id": "T10Y3M",
+          "title": "10Y - 3M Spread",
+          "score": 1,
+          "preset_overlap": 0,
+          "query_overlap": 1
+        }
+      ]
+    },
+    {
       "id": "DEXUSUK",
       "title": "U.S. Dollars to U.K. Pound Sterling Spot Exchange Rate",
       "units": "U.S. Dollars to One U.K. Pound Sterling",
@@ -3379,7 +3465,7 @@
       "observation_start": "1971-01-04",
       "observation_end": "2026-02-27",
       "span_years": 55.15,
-      "observation_count": null,
+      "observation_count": 14390,
       "popularity_score": 39,
       "term_hits": 1,
       "best_rank": 6,
@@ -3477,73 +3563,6 @@
           "title": "Housing Starts: Northeast",
           "score": 4,
           "preset_overlap": 1,
-          "query_overlap": 1
-        }
-      ]
-    },
-    {
-      "id": "WTREGEN",
-      "title": "Liabilities and Capital: Liabilities: Deposits with F.R. Banks, Other Than Reserve Balances: U.S. Treasury, General Account: Week Average",
-      "units": "Millions of U.S. Dollars",
-      "frequency": "Weekly",
-      "seasonal_adjustment": "Not Seasonally Adjusted",
-      "observation_start": "2002-12-18",
-      "observation_end": "2026-02-25",
-      "span_years": 23.19,
-      "observation_count": 1211,
-      "popularity_score": 39,
-      "term_hits": 1,
-      "best_rank": 6,
-      "popularity_rank": 176,
-      "report_usage_count": 1,
-      "themes": [
-        "Banking"
-      ],
-      "query_terms": [
-        "treasury"
-      ],
-      "related_formats": [],
-      "connected_series": [
-        {
-          "id": "RRPONTSYD",
-          "title": "Overnight Reverse Repo",
-          "score": 4,
-          "preset_overlap": 1,
-          "query_overlap": 1
-        },
-        {
-          "id": "WALCL",
-          "title": "Federal Reserve Total Assets",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "WRESBAL",
-          "title": "Reserve Balances",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "RRPONTTLD",
-          "title": "Overnight Reverse Repo - Total",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "T10Y2Y",
-          "title": "10Y - 2Y Treasury Spread",
-          "score": 1,
-          "preset_overlap": 0,
-          "query_overlap": 1
-        },
-        {
-          "id": "T10Y3M",
-          "title": "10Y - 3M Spread",
-          "score": 1,
-          "preset_overlap": 0,
           "query_overlap": 1
         }
       ]
@@ -4176,7 +4195,7 @@
       "term_hits": 1,
       "best_rank": 30,
       "popularity_rank": 873,
-      "report_usage_count": 1,
+      "report_usage_count": 2,
       "themes": [
         "Activity"
       ],
@@ -4217,6 +4236,20 @@
         {
           "id": "RRSFS",
           "title": "Real Retail Sales",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "PCEPI",
+          "title": "PCE Price Index",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "CPIAUCSL",
+          "title": "FRED CPI-U",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -4292,10 +4325,11 @@
       "term_hits": 1,
       "best_rank": 35,
       "popularity_rank": 1090,
-      "report_usage_count": 3,
+      "report_usage_count": 4,
       "themes": [
         "Prices",
-        "Policy"
+        "Policy",
+        "Activity"
       ],
       "query_terms": [
         "personal income"
@@ -4308,8 +4342,8 @@
         {
           "id": "CPIAUCSL",
           "title": "FRED CPI-U",
-          "score": 6,
-          "preset_overlap": 2,
+          "score": 9,
+          "preset_overlap": 3,
           "query_overlap": 0
         },
         {
@@ -4363,10 +4397,11 @@
       "term_hits": 0,
       "best_rank": null,
       "popularity_rank": null,
-      "report_usage_count": 3,
+      "report_usage_count": 4,
       "themes": [
         "Policy",
-        "Money"
+        "Money",
+        "Rates"
       ],
       "query_terms": [],
       "related_formats": [],
@@ -4374,8 +4409,8 @@
         {
           "id": "SOFR",
           "title": "SOFR",
-          "score": 6,
-          "preset_overlap": 2,
+          "score": 9,
+          "preset_overlap": 3,
           "query_overlap": 0
         },
         {
@@ -4475,6 +4510,205 @@
         {
           "id": "INDPRO",
           "title": "Industrial Production",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
+      "id": "SOFR",
+      "title": "SOFR",
+      "units": "",
+      "frequency": "",
+      "seasonal_adjustment": "",
+      "observation_start": "2018-04-03",
+      "observation_end": "2026-03-03",
+      "span_years": 7.92,
+      "observation_count": 2066,
+      "popularity_score": 0,
+      "term_hits": 0,
+      "best_rank": null,
+      "popularity_rank": null,
+      "report_usage_count": 3,
+      "themes": [
+        "Policy",
+        "Money",
+        "Rates"
+      ],
+      "query_terms": [],
+      "related_formats": [],
+      "connected_series": [
+        {
+          "id": "FEDFUNDS",
+          "title": "Federal Funds Rate",
+          "score": 9,
+          "preset_overlap": 3,
+          "query_overlap": 0
+        },
+        {
+          "id": "DFF",
+          "title": "Effective Federal Funds Rate (Daily)",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "DGS3MO",
+          "title": "3-Month Treasury Yield",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "TB3MS",
+          "title": "3-Month Treasury Bill",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "M1SL",
+          "title": "M1 Money Stock",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "M2SL",
+          "title": "M2 Money Stock",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
+      "id": "WALCL",
+      "title": "Federal Reserve Total Assets",
+      "units": "",
+      "frequency": "",
+      "seasonal_adjustment": "",
+      "observation_start": "2002-12-18",
+      "observation_end": "2026-02-25",
+      "span_years": 23.19,
+      "observation_count": 1211,
+      "popularity_score": 0,
+      "term_hits": 0,
+      "best_rank": null,
+      "popularity_rank": null,
+      "report_usage_count": 3,
+      "themes": [
+        "Banking",
+        "Fiscal"
+      ],
+      "query_terms": [],
+      "related_formats": [],
+      "connected_series": [
+        {
+          "id": "WRESBAL",
+          "title": "Reserve Balances",
+          "score": 9,
+          "preset_overlap": 3,
+          "query_overlap": 0
+        },
+        {
+          "id": "WTREGEN",
+          "title": "Treasury General Account",
+          "score": 6,
+          "preset_overlap": 2,
+          "query_overlap": 0
+        },
+        {
+          "id": "TOTBKCR",
+          "title": "Total Bank Credit",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "BUSLOANS",
+          "title": "Commercial and Industrial Loans",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "REALLN",
+          "title": "Real Estate Loans",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "RRPONTSYD",
+          "title": "Overnight Reverse Repo",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        }
+      ]
+    },
+    {
+      "id": "WRESBAL",
+      "title": "Reserve Balances",
+      "units": "",
+      "frequency": "",
+      "seasonal_adjustment": "",
+      "observation_start": "2002-12-18",
+      "observation_end": "2026-02-25",
+      "span_years": 23.19,
+      "observation_count": 1211,
+      "popularity_score": 0,
+      "term_hits": 0,
+      "best_rank": null,
+      "popularity_rank": null,
+      "report_usage_count": 3,
+      "themes": [
+        "Banking",
+        "Fiscal"
+      ],
+      "query_terms": [],
+      "related_formats": [],
+      "connected_series": [
+        {
+          "id": "WALCL",
+          "title": "Federal Reserve Total Assets",
+          "score": 9,
+          "preset_overlap": 3,
+          "query_overlap": 0
+        },
+        {
+          "id": "WTREGEN",
+          "title": "Treasury General Account",
+          "score": 6,
+          "preset_overlap": 2,
+          "query_overlap": 0
+        },
+        {
+          "id": "TOTBKCR",
+          "title": "Total Bank Credit",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "BUSLOANS",
+          "title": "Commercial and Industrial Loans",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "REALLN",
+          "title": "Real Estate Loans",
+          "score": 3,
+          "preset_overlap": 1,
+          "query_overlap": 0
+        },
+        {
+          "id": "RRPONTSYD",
+          "title": "Overnight Reverse Repo",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -4613,72 +4847,6 @@
       ]
     },
     {
-      "id": "SOFR",
-      "title": "SOFR",
-      "units": "",
-      "frequency": "",
-      "seasonal_adjustment": "",
-      "observation_start": "2018-04-03",
-      "observation_end": "2026-03-03",
-      "span_years": 7.92,
-      "observation_count": 2066,
-      "popularity_score": 0,
-      "term_hits": 0,
-      "best_rank": null,
-      "popularity_rank": null,
-      "report_usage_count": 2,
-      "themes": [
-        "Policy",
-        "Money"
-      ],
-      "query_terms": [],
-      "related_formats": [],
-      "connected_series": [
-        {
-          "id": "FEDFUNDS",
-          "title": "Federal Funds Rate",
-          "score": 6,
-          "preset_overlap": 2,
-          "query_overlap": 0
-        },
-        {
-          "id": "DFF",
-          "title": "Effective Federal Funds Rate (Daily)",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "DGS3MO",
-          "title": "3-Month Treasury Yield",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "TB3MS",
-          "title": "3-Month Treasury Bill",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "M1SL",
-          "title": "M1 Money Stock",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "M2SL",
-          "title": "M2 Money Stock",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        }
-      ]
-    },
-    {
       "id": "TB3MS",
       "title": "3-Month Treasury Bill",
       "units": "",
@@ -4803,136 +4971,6 @@
         {
           "id": "PAYEMS",
           "title": "Payrolls",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        }
-      ]
-    },
-    {
-      "id": "WALCL",
-      "title": "Federal Reserve Total Assets",
-      "units": "",
-      "frequency": "",
-      "seasonal_adjustment": "",
-      "observation_start": "2002-12-18",
-      "observation_end": "2026-02-25",
-      "span_years": 23.19,
-      "observation_count": 1211,
-      "popularity_score": 0,
-      "term_hits": 0,
-      "best_rank": null,
-      "popularity_rank": null,
-      "report_usage_count": 2,
-      "themes": [
-        "Banking"
-      ],
-      "query_terms": [],
-      "related_formats": [],
-      "connected_series": [
-        {
-          "id": "WRESBAL",
-          "title": "Reserve Balances",
-          "score": 6,
-          "preset_overlap": 2,
-          "query_overlap": 0
-        },
-        {
-          "id": "TOTBKCR",
-          "title": "Total Bank Credit",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "BUSLOANS",
-          "title": "Commercial and Industrial Loans",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "REALLN",
-          "title": "Real Estate Loans",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "RRPONTSYD",
-          "title": "Overnight Reverse Repo",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "RRPONTTLD",
-          "title": "Overnight Reverse Repo - Total",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        }
-      ]
-    },
-    {
-      "id": "WRESBAL",
-      "title": "Reserve Balances",
-      "units": "",
-      "frequency": "",
-      "seasonal_adjustment": "",
-      "observation_start": "2002-12-18",
-      "observation_end": "2026-02-25",
-      "span_years": 23.19,
-      "observation_count": 1211,
-      "popularity_score": 0,
-      "term_hits": 0,
-      "best_rank": null,
-      "popularity_rank": null,
-      "report_usage_count": 2,
-      "themes": [
-        "Banking"
-      ],
-      "query_terms": [],
-      "related_formats": [],
-      "connected_series": [
-        {
-          "id": "WALCL",
-          "title": "Federal Reserve Total Assets",
-          "score": 6,
-          "preset_overlap": 2,
-          "query_overlap": 0
-        },
-        {
-          "id": "TOTBKCR",
-          "title": "Total Bank Credit",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "BUSLOANS",
-          "title": "Commercial and Industrial Loans",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "REALLN",
-          "title": "Real Estate Loans",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "RRPONTSYD",
-          "title": "Overnight Reverse Repo",
-          "score": 3,
-          "preset_overlap": 1,
-          "query_overlap": 0
-        },
-        {
-          "id": "RRPONTTLD",
-          "title": "Overnight Reverse Repo - Total",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
@@ -5370,14 +5408,14 @@
       "connected_series": [
         {
           "id": "GDPC1",
-          "title": "Real GDP",
+          "title": "Real GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
         },
         {
           "id": "GDP",
-          "title": "Nominal GDP",
+          "title": "Nominal GDP (FRED)",
           "score": 3,
           "preset_overlap": 1,
           "query_overlap": 0
